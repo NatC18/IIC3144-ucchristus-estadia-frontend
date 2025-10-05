@@ -2,6 +2,7 @@ import { Search, User } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Link } from 'react-router-dom'
+import logoUCChristus from '@/assets/logo-uc-christus.png'
 
 export function Header() {
   return (
@@ -9,12 +10,14 @@ export function Header() {
       <div className="flex items-center justify-between">
         {/* Logo UC CHRISTUS */}
         <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
-              <span className="text-white font-bold text-sm">UC</span>
-            </div>
-            <span className="text-2xl font-bold" style={{ color: '#671E75' }}>CHRISTUS</span>
-          </div>
+          <Link to="/dashboard" className="flex items-center">
+            <img 
+              src={logoUCChristus} 
+              alt="UC CHRISTUS" 
+              className="h-10 w-auto" 
+              // Ajusta la altura según necesites (h-8, h-10, h-12, etc.)
+            />
+          </Link>
           
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-6 ml-8">
