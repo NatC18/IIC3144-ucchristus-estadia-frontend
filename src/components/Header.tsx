@@ -8,14 +8,13 @@ export function Header() {
   return (
     <header className="bg-white border-b border-gray-100 px-6 py-4">
       <div className="flex items-center justify-between">
-        {/* Logo UC CHRISTUS */}
+        {/* Logo */}
         <div className="flex items-center space-x-4">
           <Link to="/dashboard" className="flex items-center">
             <img 
               src={logoUCChristus} 
               alt="UC CHRISTUS" 
               className="h-10 w-auto" 
-              // Ajusta la altura según necesites (h-8, h-10, h-12, etc.)
             />
           </Link>
           
@@ -39,7 +38,6 @@ export function Header() {
           </nav>
         </div>
 
-        {/* Search and User */}
         <div className="flex items-center space-x-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />

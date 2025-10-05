@@ -15,26 +15,22 @@ export function DashboardPage() {
           <p className="text-gray-600">Gestión centralizada de estadías hospitalarias</p>
         </div>
 
-        {/* Grid de gráficos superiores */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <EstadisticasTareasChart />
           <TiposBarreraChart />
           <TendenciaEstadiaChart />
         </div>
 
-        {/* Grid principal */}
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Columna izquierda */}
           <div className="space-y-8">
             <TareasPendientes />
             <ExtensionesCriticas />
           </div>
 
-          {/* Columna derecha */}
           <div className="space-y-8">
             <AlertasPredichas />
             
-            {/* Estadísticas en tarjetas */}
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-white p-6 rounded-xl border-0">
                 <div className="flex items-center">

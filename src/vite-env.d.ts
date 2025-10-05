@@ -1,6 +1,5 @@
 /// <reference types="vite/client" />
 
-// Declaraciones para importar imágenes
 declare module '*.png' {
   const value: string
   export default value
