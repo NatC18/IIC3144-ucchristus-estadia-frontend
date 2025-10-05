@@ -1,6 +1,7 @@
 import { Search, User } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { Link } from 'react-router-dom'
 
 export function Header() {
   return (
@@ -17,21 +18,21 @@ export function Header() {
           
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-6 ml-8">
-          <a href="#" className="font-medium border-b-2 pb-1" style={{ color: '#671E75', borderColor: '#671E75' }}>
+            <Link to="/dashboard" className="font-medium border-b-2 pb-1" style={{ color: '#671E75', borderColor: '#671E75' }}>
               Dashboard
-            </a>
-            <a href="#" className="text-gray-600 transition-colors" onMouseEnter={(e) => e.currentTarget.style.color = '#671E75'} onMouseLeave={(e) => e.currentTarget.style.color = '#6b7280'}>
+            </Link>
+            <Link to="#" className="text-gray-600 transition-colors" onMouseEnter={(e) => (e.currentTarget.style.color = '#671E75')} onMouseLeave={(e) => (e.currentTarget.style.color = '#6b7280')}>
               Pacientes
-            </a>
-            <a href="#" className="text-gray-600 transition-colors" onMouseEnter={(e) => e.currentTarget.style.color = '#671E75'} onMouseLeave={(e) => e.currentTarget.style.color = '#6b7280'}>
+            </Link>
+            <Link to="#" className="text-gray-600 transition-colors" onMouseEnter={(e) => (e.currentTarget.style.color = '#671E75')} onMouseLeave={(e) => (e.currentTarget.style.color = '#6b7280')}>
               Alertas
-            </a>
-            <a href="#" className="text-gray-600 transition-colors" onMouseEnter={(e) => e.currentTarget.style.color = '#671E75'} onMouseLeave={(e) => e.currentTarget.style.color = '#6b7280'}>
+            </Link>
+            <Link to="#" className="text-gray-600 transition-colors" onMouseEnter={(e) => (e.currentTarget.style.color = '#671E75')} onMouseLeave={(e) => (e.currentTarget.style.color = '#6b7280')}>
               Reportes
-            </a>
-            <a href="#" className="text-gray-600 transition-colors" onMouseEnter={(e) => e.currentTarget.style.color = '#671E75'} onMouseLeave={(e) => e.currentTarget.style.color = '#6b7280'}>
+            </Link>
+            <Link to="#" className="text-gray-600 transition-colors" onMouseEnter={(e) => (e.currentTarget.style.color = '#671E75')} onMouseLeave={(e) => (e.currentTarget.style.color = '#6b7280')}>
               Administrativo
-            </a>
+            </Link>
           </nav>
         </div>
 

@@ -8,9 +8,9 @@ function getDiasEstadiaColor(dias: string) {
   if (numeroDias >= 30) {
     return 'bg-red-100 text-red-800 border-red-200 rounded-full whitespace-nowrap'
   } else if (numeroDias >= 20) {
-    return 'bg-yellow-100 text-yellow-800 border-yellow-200 rounded-full whitespace-nowrap'
+    return 'bg-[#FBF2CC] text-[#E3AE00] rounded-full whitespace-nowrap'
   } else {
-    return 'bg-green-100 text-green-800 border-green-200 rounded-full whitespace-nowrap'
+    return 'bg-[#ECEFCF] text-[#8FA31E] rounded-full whitespace-nowrap'
   }
 }
 

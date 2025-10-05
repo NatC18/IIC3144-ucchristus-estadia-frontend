@@ -1,5 +1,6 @@
-import { DashboardPage } from './DashboardPage'
+import { Navigate } from 'react-router-dom'
 
 export default function HomePage() {
-  return <DashboardPage />
+  // Redirige '/' a '/dashboard'
+  return <Navigate to="/dashboard" replace />
 }
