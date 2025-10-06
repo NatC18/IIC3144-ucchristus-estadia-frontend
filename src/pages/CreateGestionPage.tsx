@@ -75,27 +75,10 @@ export function CreateGestionPage() {
                 />
               </div>
 
-              {/* Paciente */}
-              <div>
-                <label htmlFor="paciente" className="block text-sm font-medium text-gray-700 mb-2">
-                  Nombre del Paciente <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  type="text"
-                  id="paciente"
-                  name="paciente"
-                  required
-                  value={formData.paciente}
-                  onChange={handleChange}
-                  placeholder="Ej: Juan Pérez"
-                  className="w-full"
-                />
-              </div>
-
-              {/* Tipo de Barrera */}
+              {/* Tipo de Gestión */}
               <div>
                 <label htmlFor="tipoBarrera" className="block text-sm font-medium text-gray-700 mb-2">
-                  Tipo de Barrera <span className="text-red-500">*</span>
+                  Tipo de Gestión<span className="text-red-500">*</span>
                 </label>
                 <select
                   id="tipoBarrera"
@@ -105,46 +88,21 @@ export function CreateGestionPage() {
                   onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#671E75] focus:border-transparent"
                 >
-                  <option value="Social">Social</option>
-                  <option value="Administrativa">Administrativa</option>
-                  <option value="Clínica">Clínica</option>
-                  <option value="Técnica">Técnica</option>
-                </select>
-              </div>
-
-              {/* Descripción */}
-              <div>
-                <label htmlFor="descripcion" className="block text-sm font-medium text-gray-700 mb-2">
-                  Descripción <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  id="descripcion"
-                  name="descripcion"
-                  required
-                  rows={4}
-                  value={formData.descripcion}
-                  onChange={handleChange}
-                  placeholder="Describe la situación o tarea a realizar..."
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#671E75] focus:border-transparent"
-                />
-              </div>
-
-              {/* Estado */}
-              <div>
-                <label htmlFor="estado" className="block text-sm font-medium text-gray-700 mb-2">
-                  Estado Inicial <span className="text-red-500">*</span>
-                </label>
-                <select
-                  id="estado"
-                  name="estado"
-                  required
-                  value={formData.estado}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#671E75] focus:border-transparent"
-                >
-                  <option value="Abierta">Abierta</option>
-                  <option value="En proceso">En proceso</option>
-                  <option value="Cerrada">Cerrada</option>
+                  <option value="Listado Gestiones">Listado Gestiones</option>
+                  <option value="Homecare UCCC">Homecare UCCC</option>
+                  <option value="Homecare">Homecare</option>
+                  <option value="Traslado">Traslado</option>
+                  <option value="Activación Beneficio Isapre">Activación Beneficio Isapre</option>
+                  <option value="Autorización Procedimiento">Autorización Procedimiento</option>
+                  <option value="Cobertura">Cobertura</option>
+                  <option value="Corte Cuentas">Corte Cuentas</option>
+                  <option value="Evaluación de otro financiamiento">Evaluación de otro financiamiento</option>
+                  <option value="Actualización de estado paciente solicitado por prestadores">Actualización de estado paciente solicitado por prestadores</option>
+                  <option value="Asignación de Centro de Dialisis">Asignación de Centro de Dialisis</option>
+                  <option value="Manejo ambulatorio">Manejo ambulatorio</option>
+                  <option value="Ingreso de Cuidados Paliativos">Ingreso de Cuidados Paliativos</option>
+                  <option value="Evaluación de beneficio gestión interna">Evaluación de beneficio gestión interna</option>
+                  <option value="Gestión Clínica">Gestión Clínica</option>
                 </select>
               </div>
 
