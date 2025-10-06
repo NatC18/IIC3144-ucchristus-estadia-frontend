@@ -1,10 +1,16 @@
-import { Search, User } from 'lucide-react'
+import { Search, User, LogOut } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import logoUCChristus from '@/assets/logo-uc-christus.png'
 
 export function Header() {
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    localStorage.removeItem('user')
+    navigate('/login')
+  }
   return (
     <header className="bg-white border-b border-gray-100 px-6 py-4">
       <div className="flex items-center justify-between">
@@ -46,8 +52,25 @@ export function Header() {
               className="pl-10 w-64"
             />
           </div>
-          <Button variant="ghost" size="icon">
-            <User className="h-6 w-6 text-gray-600" />
+          <Link 
+            to="/profile" 
+            className="text-gray-600 transition-colors hover:text-[#671E75]"
+          >
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="transition-colors hover:text-[#671E75]"
+            >
+              <User className="h-6 w-6" />
+            </Button>
+          </Link>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={handleLogout}
+            className="transition-colors hover:text-[#671E75]"
+          >
+            <LogOut className="h-6 w-6" />
           </Button>
         </div>
       </div>
