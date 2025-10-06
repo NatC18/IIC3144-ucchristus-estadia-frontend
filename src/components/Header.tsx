@@ -20,19 +20,22 @@ export function Header() {
           
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-6 ml-8">
-            <Link to="/dashboard" className="font-medium border-b-2 pb-1" style={{ color: '#671E75', borderColor: '#671E75' }}>
+            <Link to="/dashboard" className="text-gray-600 transition-colors hover:text-[#671E75]">
               Dashboard
             </Link>
-            <Link to="#" className="text-gray-600 transition-colors" onMouseEnter={(e) => (e.currentTarget.style.color = '#671E75')} onMouseLeave={(e) => (e.currentTarget.style.color = '#6b7280')}>
+            <Link to="/gestiones" className="text-gray-600 transition-colors hover:text-[#671E75]">
+              Gestiones
+            </Link>
+            <Link to="#" className="text-gray-600 transition-colors hover:text-[#671E75]">
               Pacientes
             </Link>
-            <Link to="#" className="text-gray-600 transition-colors" onMouseEnter={(e) => (e.currentTarget.style.color = '#671E75')} onMouseLeave={(e) => (e.currentTarget.style.color = '#6b7280')}>
+            <Link to="#" className="text-gray-600 transition-colors hover:text-[#671E75]">
               Alertas
             </Link>
-            <Link to="#" className="text-gray-600 transition-colors" onMouseEnter={(e) => (e.currentTarget.style.color = '#671E75')} onMouseLeave={(e) => (e.currentTarget.style.color = '#6b7280')}>
+            <Link to="#" className="text-gray-600 transition-colors hover:text-[#671E75]">
               Reportes
             </Link>
-            <Link to="#" className="text-gray-600 transition-colors" onMouseEnter={(e) => (e.currentTarget.style.color = '#671E75')} onMouseLeave={(e) => (e.currentTarget.style.color = '#6b7280')}>
+            <Link to="#" className="text-gray-600 transition-colors hover:text-[#671E75]">
               Administrativo
             </Link>
           </nav>
