@@ -25,7 +25,7 @@ export function PacientesPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterHospitalizado, setFilterHospitalizado] = useState<string>('all')
 
-  // Filter tasks based on search and filter
+  // Filter patients based on search and filter
   const filteredPacientes = pacientes.filter(paciente => {
     const matchesSearch = 
       paciente.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
