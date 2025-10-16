@@ -55,16 +55,20 @@ export function PacienteDetailPage() {
     <div className="min-h-screen bg-gray-100">
       <Header />
       <main className="container mx-auto px-6 py-8">
-        <div className="mb-8 flex items-center gap-4">
+        {/* Header Section */}
+        <div className="mb-8">
           <Button 
             variant="ghost" 
-            size="icon" 
-            onClick={() => navigate(-1)}
+            onClick={() => navigate('/gestiones')}
+            className="mb-4 -ml-2"
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Volver a Gestiones
           </Button>
-          <h1 className="text-3xl font-bold text-gray-900">Detalle paciente</h1>
-          <p className="text-gray-600">Información detallada de pacientes</p>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Detalle de Paciente</h1>
+            <p className="text-gray-600">Detalles del paciente {paciente.nombre}</p>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
