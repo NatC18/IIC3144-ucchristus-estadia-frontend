@@ -1,15 +1,15 @@
 import { Search, User, LogOut } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
+import { useAuth0 } from '@auth0/auth0-react'
 import logoUCChristus from '@/assets/logo-uc-christus.png'
 
 export function Header() {
-  const navigate = useNavigate()
+  const { logout, user } = useAuth0()
 
   const handleLogout = () => {
-    localStorage.removeItem('user')
-    navigate('/login')
+    logout({ logoutParams: { returnTo: window.location.origin } })
   }
   return (
     <header className="bg-white border-b border-gray-100 px-6 py-4">
@@ -55,23 +55,43 @@ export function Header() {
               className="pl-10 w-64"
             />
           </div>
-          <Link 
-            to="/profile" 
-            className="text-gray-600 transition-colors hover:text-[#671E75]"
-          >
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="transition-colors hover:text-[#671E75]"
-            >
-              <User className="h-6 w-6" />
-            </Button>
-          </Link>
+          {/* User Info */}
+          {user && (
+            <div className="flex items-center space-x-3">
+              <div className="text-right hidden md:block">
+                <p className="text-sm font-medium text-gray-900">{user.name}</p>
+                <p className="text-xs text-gray-500">{user.email}</p>
+              </div>
+              
+              <Link 
+                to="/profile" 
+                className="flex items-center space-x-2 text-gray-600 transition-colors hover:text-[#671E75]"
+              >
+                {user.picture ? (
+                  <img 
+                    src={user.picture} 
+                    alt="Profile" 
+                    className="h-8 w-8 rounded-full"
+                  />
+                ) : (
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="transition-colors hover:text-[#671E75]"
+                  >
+                    <User className="h-6 w-6" />
+                  </Button>
+                )}
+              </Link>
+            </div>
+          )}
+          
           <Button 
             variant="ghost" 
             size="icon" 
             onClick={handleLogout}
-            className="transition-colors hover:text-[#671E75]"
+            className="transition-colors hover:text-[#671E75] hover:bg-red-50"
+            title="Cerrar sesión"
           >
             <LogOut className="h-6 w-6" />
           </Button>

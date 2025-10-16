@@ -1,10 +1,41 @@
+import { useEffect, useState } from 'react'
+import { useAuth0 } from '@auth0/auth0-react'
 import { Header } from '@/components/Header'
 import { TareasPendientes } from '@/components/TareasPendientes'
 import { ExtensionesCriticas } from '@/components/ExtensionesCriticas'
 import { AlertasPredichas } from '@/components/AlertasPredichas'
 import { EstadisticasTareasChart, TiposBarreraChart, TendenciaEstadiaChart } from '@/components/Charts'
+import { useApi } from '@/hooks/useApi'
+import { Card, CardHeader, CardContent } from '@/components/ui/card'
+
+interface BackendData {
+  status?: string
+  message?: string
+  version?: string
+  [key: string]: unknown
+}
 
 export function DashboardPage() {
+  const { user } = useAuth0()
+  const api = useApi()
+  const [backendData, setBackendData] = useState<BackendData | null>(null)
+  const [loading, setLoading] = useState(true)
+  
+  useEffect(() => {
+    const fetchBackendData = async () => {
+      try {
+        const data = await api.publicGet('/user-info/')
+        setBackendData(data)
+      } catch (error) {
+        console.error('Error fetching backend data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    fetchBackendData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Empty dependency array - fetch only once on mount
   return (
     <div className="min-h-screen bg-gray-100">
       <Header />
@@ -13,6 +44,37 @@ export function DashboardPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
           <p className="text-gray-600">Gestión centralizada de estadías hospitalarias</p>
+        </div>
+
+        {/* Auth0 Connection Status */}
+        <div className="mb-6">
+          <Card className="bg-white border-1 shadow">
+            <CardHeader>
+              <h3 className="text-lg font-semibold text-gray-900">Estado de Conexión</h3>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h4 className="font-medium text-gray-700 mb-2">Usuario Auth0:</h4>
+                  <p className="text-sm text-gray-600">{user?.name || 'Cargando...'}</p>
+                  <p className="text-sm text-gray-500">{user?.email || 'Cargando...'}</p>
+                </div>
+                <div>
+                  <h4 className="font-medium text-gray-700 mb-2">Backend:</h4>
+                  {loading ? (
+                    <p className="text-sm text-yellow-600">Conectando...</p>
+                  ) : backendData ? (
+                    <div>
+                      <p className="text-sm text-green-600">✅ Conectado</p>
+                      <p className="text-xs text-gray-500">{backendData.message}</p>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-red-600">❌ Error de conexión</p>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
