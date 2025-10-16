@@ -28,6 +28,7 @@ export function PacienteDetailPage() {
   const navigate = useNavigate()
   const { id } = useParams()
   const paciente = pacientes.find(p => p.id === parseInt(id || '0'))
+  const [selectedEpisodio, setSelectedEpisodio] = useState<Episodio | null>(null)
 
   if (!paciente) {
     return (
@@ -49,7 +50,6 @@ export function PacienteDetailPage() {
       </div>
     )
   }
-  const [selectedEpisodio, setSelectedEpisodio] = useState<Episodio | null>(null)
 
   return (
     <div className="min-h-screen bg-gray-100">
