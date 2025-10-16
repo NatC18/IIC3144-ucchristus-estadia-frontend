@@ -17,6 +17,17 @@ export interface AlertaPredicha {
   descripcion: string;
 }
 
+export interface Paciente {
+  id: number;
+  nombre: string;
+  score: number;
+  rut: string;
+  prevision: string;
+  edad: number;
+  sexo: 'M' | 'F';
+  hospitalizado: boolean;
+}
+
 export const tareasPendientes: TareaPendiente[] = [
   {
     episodio: "126823993",
@@ -87,6 +98,39 @@ export const alertasPredichas: AlertaPredicha[] = [
     episodio: "345678901",
     tipoBarrera: "Clínica",
     descripcion: "Posible complicación post-quirúrgica"
+  }
+];
+
+export const pacientes: Paciente[] = [
+  {
+    id: 0,
+    nombre: "Juan Pérez",
+    score: 85,
+    rut: "12.345.678-9",
+    prevision: "Isapre",
+    edad: 45,
+    sexo: "M",
+    hospitalizado: true
+  },
+  {
+    id: 1,
+    nombre: "María Fernández",
+    score: 92,
+    rut: "8.765.432-1",
+    prevision: "Fonasa",
+    edad: 60,
+    sexo: "F",
+    hospitalizado: false
+  },
+  {
+    id: 2,
+    nombre: "Carlos Rodríguez",
+    score: 78,
+    rut: "11.223.344-5",
+    prevision: "Isapre",
+    edad: 50,
+    sexo: "M",
+    hospitalizado: true
   }
 ];
 
