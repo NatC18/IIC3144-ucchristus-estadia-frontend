@@ -185,7 +185,12 @@ export function GestionesPage() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" className="text-[#671E75] hover:bg-purple-50">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="text-[#671E75] hover:bg-purple-50"
+                          onClick={() => navigate(`/gestiones/${index}`)}
+                        >
                           Ver detalles
                         </Button>
                       </TableCell>
