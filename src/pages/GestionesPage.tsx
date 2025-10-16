@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { Header } from '@/components/Header'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -58,7 +57,7 @@ export function GestionesPage() {
           </div>
           <Button 
             onClick={() => navigate('/gestiones/create')}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 text-white hover:text-white"
             style={{ backgroundColor: '#671E75' }}
           >
             <Plus className="h-4 w-4" />
@@ -68,76 +67,68 @@ export function GestionesPage() {
 
         {/* Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="rounded-xl border-0">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Total Gestiones</p>
-                  <p className="text-3xl font-bold text-gray-900 mt-2">{totalTareas}</p>
-                </div>
-                <div className="p-3 rounded-xl" style={{ backgroundColor: '#f3e8ff' }}>
-                  <svg className="w-6 h-6" style={{ color: '#671E75' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                  </svg>
-                </div>
+          <div className="bg-white p-6 rounded-xl border-0">
+            <div className="flex items-center">
+              <div className="p-3 rounded-xl" style={{ backgroundColor: '#f3e8ff' }}>
+                <svg className="w-6 h-6" style={{ color: '#671E75' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
               </div>
-            </CardContent>
-          </Card>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Total Gestiones</p>
+                <p className="text-2xl font-bold text-gray-900">{totalTareas}</p>
+              </div>
+            </div>
+          </div>
 
-          <Card className="rounded-xl border-0">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Abiertas</p>
-                  <p className="text-3xl font-bold text-gray-900 mt-2">{abiertas}</p>
-                </div>
-                <div className="p-3 rounded-xl" style={{ backgroundColor: '#FBF2CC' }}>
-                  <svg className="w-6 h-6" style={{ color: '#E3AE00' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
+          <div className="bg-white p-6 rounded-xl border-0">
+            <div className="flex items-center">
+              <div className="p-3 rounded-xl" style={{ backgroundColor: '#FBF2CC' }}>
+                <svg className="w-6 h-6" style={{ color: '#E3AE00' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
               </div>
-            </CardContent>
-          </Card>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Abiertas</p>
+                <p className="text-2xl font-bold text-gray-900">{abiertas}</p>
+              </div>
+            </div>
+          </div>
 
-          <Card className="rounded-xl border-0">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">En Proceso</p>
-                  <p className="text-3xl font-bold text-gray-900 mt-2">{enProceso}</p>
-                </div>
-                <div className="p-3 rounded-xl" style={{ backgroundColor: '#ECEFCF' }}>
-                  <svg className="w-6 h-6" style={{ color: '#8FA31E' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
+          <div className="bg-white p-6 rounded-xl border-0">
+            <div className="flex items-center">
+              <div className="p-3 rounded-xl" style={{ backgroundColor: '#ECEFCF' }}>
+                <svg className="w-6 h-6" style={{ color: '#8FA31E' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
               </div>
-            </CardContent>
-          </Card>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">En Proceso</p>
+                <p className="text-2xl font-bold text-gray-900">{enProceso}</p>
+              </div>
+            </div>
+          </div>
 
-          <Card className="rounded-xl border-0">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Cerradas</p>
-                  <p className="text-3xl font-bold text-gray-900 mt-2">{cerradas}</p>
-                </div>
-                <div className="p-3 rounded-xl bg-gray-100">
-                  <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
+          <div className="bg-white p-6 rounded-xl border-0">
+            <div className="flex items-center">
+              <div className="p-3 rounded-xl bg-gray-100">
+                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
               </div>
-            </CardContent>
-          </Card>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Cerradas</p>
+                <p className="text-2xl font-bold text-gray-900">{cerradas}</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Main Content - Tasks Table */}
-        <Card className="rounded-xl border-0">
-          <CardHeader>
+        <div className="bg-white rounded-xl border-0">
+          <div className="p-6 border-b border-gray-100">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-semibold">Todas las Gestiones</CardTitle>
+              <h2 className="text-lg font-semibold">Todas las Gestiones</h2>
               <div className="flex items-center gap-4">
                 {/* Search */}
                 <div className="relative">
@@ -166,8 +157,8 @@ export function GestionesPage() {
                 </div>
               </div>
             </div>
-          </CardHeader>
-          <CardContent>
+          </div>
+          <div className="p-6">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -194,7 +185,12 @@ export function GestionesPage() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" className="text-[#671E75] hover:bg-purple-50">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="text-[#671E75] hover:bg-purple-50"
+                          onClick={() => navigate(`/gestiones/${index}`)}
+                        >
                           Ver detalles
                         </Button>
                       </TableCell>
@@ -209,8 +205,8 @@ export function GestionesPage() {
                 )}
               </TableBody>
             </Table>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </main>
     </div>
   )
