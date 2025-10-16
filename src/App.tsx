@@ -6,6 +6,8 @@ import { CreateGestionPage } from './pages/CreateGestionPage'
 import { GestionDetailPage } from './pages/GestionDetailPage'
 import { LoginPage } from './pages/LoginPage'
 import { ProfilePage } from './pages/ProfilePage'
+import { PacientesPage } from './pages/PacientesPage'
+import { PacienteDetailPage } from './pages/PacienteDetailPage'
 import { PrivateRoute } from './components/PrivateRoute'
 
 
@@ -18,6 +20,8 @@ function App() {
         <Route path="/gestiones" element={<GestionesPage />} />
         <Route path="/gestiones/create" element={<CreateGestionPage />} />
         <Route path="/gestiones/:id" element={<GestionDetailPage />} />
+        <Route path="/pacientes" element={<PacientesPage />} />
+        <Route path="/pacientes/:id" element={<PacienteDetailPage />} />
         <Route path="/dashboard" element={
             <PrivateRoute>
               <DashboardPage />

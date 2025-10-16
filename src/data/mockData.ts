@@ -17,6 +17,28 @@ export interface AlertaPredicha {
   descripcion: string;
 }
 
+export interface Paciente {
+  id: number;
+  nombre: string;
+  score: number;
+  rut: string;
+  prevision: string;
+  edad: number;
+  sexo: 'M' | 'F';
+  hospitalizado: boolean;
+}
+
+export interface Episodio {
+  id: number;
+  episodio: string;
+  paciente: number;
+  norma: string; // Cantidad de días que debiera estar el paciente
+  fechaIngreso: string;
+  tiempoEstadia: string;
+  estado: 'Activo' | 'Egresado';
+  extensionCritica: boolean;
+}
+
 export const tareasPendientes: TareaPendiente[] = [
   {
     episodio: "126823993",
@@ -41,7 +63,13 @@ export const tareasPendientes: TareaPendiente[] = [
     tipoBarrera: "Social",
     descripcion: "Coordinar transporte para paciente",
     estado: "En proceso"
-  }
+  },
+  {
+    episodio: "456789012",
+    tipoBarrera: "Administrativa",
+    descripcion: "Revisar cobertura de seguro médico",
+    estado: "Cerrada"
+  },
 ];
 
 export const extensionesCriticas: ExtensionCritica[] = [
@@ -87,6 +115,82 @@ export const alertasPredichas: AlertaPredicha[] = [
     episodio: "345678901",
     tipoBarrera: "Clínica",
     descripcion: "Posible complicación post-quirúrgica"
+  }
+];
+
+export const pacientes: Paciente[] = [
+  {
+    id: 0,
+    nombre: "Juan Pérez",
+    score: 85,
+    rut: "12.345.678-9",
+    prevision: "Isapre",
+    edad: 45,
+    sexo: "M",
+    hospitalizado: true
+  },
+  {
+    id: 1,
+    nombre: "María Fernández",
+    score: 92,
+    rut: "8.765.432-1",
+    prevision: "Fonasa",
+    edad: 60,
+    sexo: "F",
+    hospitalizado: false
+  },
+  {
+    id: 2,
+    nombre: "Carlos Rodríguez",
+    score: 78,
+    rut: "11.223.344-5",
+    prevision: "Isapre",
+    edad: 50,
+    sexo: "M",
+    hospitalizado: true
+  }
+];
+
+export const episodios: Episodio[] = [
+  {
+    id: 0,
+    episodio: "126823993",
+    paciente: 0,
+    norma: "44",
+    fechaIngreso: "2024-01-15",
+    tiempoEstadia: "60",
+    estado: "Activo",
+    extensionCritica: true
+  },
+  {
+    id: 1,
+    episodio: "234797327",
+    paciente: 1,
+    norma: "30",
+    fechaIngreso: "2024-02-10",
+    tiempoEstadia: "45",
+    estado: "Egresado",
+    extensionCritica: true
+  },
+  {
+    id: 2,
+    episodio: "345678901",
+    paciente: 2,
+    norma: "25",
+    fechaIngreso: "2024-03-05",
+    tiempoEstadia: "28",
+    estado: "Activo",
+    extensionCritica: false
+  },
+  {
+    id: 3,
+    episodio: "456789012",
+    paciente: 0,
+    norma: "44",
+    fechaIngreso: "2024-04-12",
+    tiempoEstadia: "4",
+    estado: "Activo",
+    extensionCritica: false
   }
 ];
 
