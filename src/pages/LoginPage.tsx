@@ -1,24 +1,29 @@
-import { useState } from 'react'
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
+import { useAuth0 } from '@auth0/auth0-react'
+import { Card, CardHeader, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import logoUCChristus from '@/assets/logo-uc-christus.png'
 
 export function LoginPage() {
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
+  const { loginWithRedirect, isAuthenticated, isLoading } = useAuth0()
   const navigate = useNavigate()
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Simple validation
-    if (username && password) {
-      // Store user info in localStorage
-      localStorage.setItem('user', JSON.stringify({ username }))
-      // Redirect to dashboard
+  useEffect(() => {
+    if (isAuthenticated) {
       navigate('/dashboard')
     }
+  }, [isAuthenticated, navigate])
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#671E75]"></div>
+          <p className="mt-4 text-gray-600">Cargando...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -30,47 +35,16 @@ export function LoginPage() {
             alt="UC CHRISTUS" 
             className="h-12 mx-auto"
           />
-          <h2 className="text-2xl font-semibold text-gray-800">Iniciar sesión</h2>
         </CardHeader>
-        <form onSubmit={handleLogin}>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-600" htmlFor="username">
-                Usuario
-              </label>
-              <Input
-                id="username"
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                required
-                className="bg-white/50 border-gray-200 focus:border-[#671E75] focus:ring-[#671E75]"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-600" htmlFor="password">
-                Contraseña
-              </label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="bg-white/50 border-gray-200 focus:border-[#671E75] focus:ring-[#671E75]"
-              />
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button 
-              className="w-full text-white transition-all duration-200 transform active:scale-95 hover:bg-[#561563] hover:shadow-lg" 
-              type="submit"
-              style={{ backgroundColor: '#671E75' }}
-            >
-              Ingresar
-            </Button>
-          </CardFooter>
-        </form>
+        <CardContent className="space-y-4">
+          <Button 
+            onClick={() => loginWithRedirect()}
+            className="w-full text-white transition-all duration-200 transform active:scale-95 hover:bg-[#561563] hover:shadow-lg" 
+            style={{ backgroundColor: '#671E75' }}
+          >
+            Ingresar
+          </Button>
+        </CardContent>
       </Card>
     </div>
   )

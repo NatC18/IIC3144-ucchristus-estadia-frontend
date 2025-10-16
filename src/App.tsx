@@ -8,6 +8,7 @@ import { LoginPage } from './pages/LoginPage'
 import { ProfilePage } from './pages/ProfilePage'
 import { PacientesPage } from './pages/PacientesPage'
 import { PacienteDetailPage } from './pages/PacienteDetailPage'
+import { CallbackPage } from './pages/CallbackPage'
 import { PrivateRoute } from './components/PrivateRoute'
 
 
@@ -16,6 +17,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/callback" element={<CallbackPage />} />
         <Route path="/" element={<HomePage />} />
         <Route path="/gestiones" element={<GestionesPage />} />
         <Route path="/gestiones/create" element={<CreateGestionPage />} />
