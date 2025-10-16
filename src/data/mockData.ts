@@ -28,6 +28,17 @@ export interface Paciente {
   hospitalizado: boolean;
 }
 
+export interface Episodio {
+  id: number;
+  episodio: string;
+  paciente: number;
+  norma: string; // Cantidad de días que debiera estar el paciente
+  fechaIngreso: string;
+  tiempoEstadia: string;
+  estado: 'Activo' | 'Egresado';
+  extensionCritica: boolean;
+}
+
 export const tareasPendientes: TareaPendiente[] = [
   {
     episodio: "126823993",
@@ -52,7 +63,13 @@ export const tareasPendientes: TareaPendiente[] = [
     tipoBarrera: "Social",
     descripcion: "Coordinar transporte para paciente",
     estado: "En proceso"
-  }
+  },
+  {
+    episodio: "456789012",
+    tipoBarrera: "Administrativa",
+    descripcion: "Revisar cobertura de seguro médico",
+    estado: "Cerrada"
+  },
 ];
 
 export const extensionesCriticas: ExtensionCritica[] = [
@@ -131,6 +148,49 @@ export const pacientes: Paciente[] = [
     edad: 50,
     sexo: "M",
     hospitalizado: true
+  }
+];
+
+export const episodios: Episodio[] = [
+  {
+    id: 0,
+    episodio: "126823993",
+    paciente: 0,
+    norma: "44",
+    fechaIngreso: "2024-01-15",
+    tiempoEstadia: "60",
+    estado: "Activo",
+    extensionCritica: true
+  },
+  {
+    id: 1,
+    episodio: "234797327",
+    paciente: 1,
+    norma: "30",
+    fechaIngreso: "2024-02-10",
+    tiempoEstadia: "45",
+    estado: "Egresado",
+    extensionCritica: true
+  },
+  {
+    id: 2,
+    episodio: "345678901",
+    paciente: 2,
+    norma: "25",
+    fechaIngreso: "2024-03-05",
+    tiempoEstadia: "28",
+    estado: "Activo",
+    extensionCritica: false
+  },
+  {
+    id: 3,
+    episodio: "456789012",
+    paciente: 0,
+    norma: "44",
+    fechaIngreso: "2024-04-12",
+    tiempoEstadia: "4",
+    estado: "Activo",
+    extensionCritica: false
   }
 ];
 
