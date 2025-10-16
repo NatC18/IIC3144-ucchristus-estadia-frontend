@@ -125,7 +125,7 @@ export function PacientesPage() {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-8 text-gray-500">
-                      No se encontraron gestiones que coincidan con tu búsqueda
+                      No se encontraron pacientes que coincidan con tu búsqueda
                     </TableCell>
                   </TableRow>
                 )}
