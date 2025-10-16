@@ -27,10 +27,28 @@ function getEstadoColor(estado: TareaPendiente['estado']) {
 export function PacienteDetailPage() {
   const navigate = useNavigate()
   const { id } = useParams()
-  const pacienteIndex = parseInt(id || '0')
+  const paciente = pacientes.find(p => p.id === parseInt(id || '0'))
 
-  const paciente = pacientes[pacienteIndex]
-
+  if (!paciente) {
+    return (
+      <div className="min-h-screen bg-gray-100">
+        <Header />
+        <main className="container mx-auto px-6 py-8">
+          <div className="mb-8 flex items-center gap-4">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => navigate(-1)}
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-3xl font-bold text-gray-900">Paciente no encontrado</h1>
+          </div>
+          <p className="text-gray-600">No se encontró el paciente con ID {id}.</p>
+        </main>
+      </div>
+    )
+  }
   const [selectedEpisodio, setSelectedEpisodio] = useState<Episodio | null>(null)
 
   return (
