@@ -52,7 +52,7 @@ export function CreateGestionPage() {
         </div>
 
         {/* Form Card */}
-        <Card className="rounded-xl border-0 max-w-3xl">
+        <Card className="rounded-xl border-0 max-w-3xl bg-white">
           <CardHeader>
             <CardTitle className="text-lg font-semibold">Información de la Gestión</CardTitle>
           </CardHeader>
@@ -126,7 +126,7 @@ export function CreateGestionPage() {
               <div className="flex gap-4 pt-6">
                 <Button
                   type="submit"
-                  className="flex-1"
+                  className="flex-1 text-white hover:text-white"
                   style={{ backgroundColor: '#671E75' }}
                 >
                   Crear Gestión
@@ -145,7 +145,7 @@ export function CreateGestionPage() {
         </Card>
 
         {/* Info Card */}
-        <Card className="rounded-xl border-0 max-w-3xl mt-6 bg-blue-50 border-blue-200">
+        <Card className="rounded-xl border-0 max-w-3xl mt-6 bg-blue-50">
           <CardContent className="pt-6">
             <div className="flex gap-3">
               <svg className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
