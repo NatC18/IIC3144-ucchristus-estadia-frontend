@@ -1,23 +1,31 @@
-import { Navigate } from 'react-router-dom'
-import { useAuth0 } from '@auth0/auth0-react'
+import { Navigate, useLocation } from 'react-router-dom'
+import { useAuth } from '@/contexts/AuthContext'
+import { AuthLoadingSpinner } from '@/contexts/AuthContext'
 
-export function PrivateRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth0()
+interface PrivateRouteProps {
+  children: React.ReactNode
+}
 
+export function PrivateRoute({ children }: PrivateRouteProps) {
+  const { isAuthenticated, isLoading } = useAuth()
+  const location = useLocation()
+
+  // Mostrar spinner mientras se verifica la autenticación
   if (isLoading) {
+    return <AuthLoadingSpinner />
+  }
+
+  // Si no está autenticado, redirigir al login con la ubicación actual
+  if (!isAuthenticated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#671E75]"></div>
-          <p className="mt-4 text-gray-600">Verificando autenticación...</p>
-        </div>
-      </div>
+      <Navigate 
+        to="/login" 
+        state={{ from: location }} 
+        replace 
+      />
     )
   }
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />
-  }
-
-  return children
+  // Si está autenticado, mostrar el componente
+  return <>{children}</>
 }

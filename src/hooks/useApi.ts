@@ -1,91 +1,149 @@
-import { useAuth0 } from '@auth0/auth0-react'
+import { useState } from 'react'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api'
+
+interface LoginResponse {
+  token: string
+  user: {
+    id: number
+    username: string
+    email?: string
+    first_name?: string
+    last_name?: string
+  }
+}
 
 export function useApi() {
-  const { getAccessTokenSilently, isAuthenticated } = useAuth0()
+  const [authToken, setAuthToken] = useState<string | null>(
+    localStorage.getItem('authToken')
+  )
 
-  const makeRequest = async (endpoint: string, options: RequestInit = {}) => {
-    if (!isAuthenticated) {
-      throw new Error('User not authenticated')
+  // Función para hacer peticiones autenticadas
+  const makeRequest = async <T>(
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<T> => {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...options.headers as Record<string, string>,
     }
 
+    // Agregar token de autenticación si existe
+    if (authToken) {
+      headers['Authorization'] = `Token ${authToken}`
+    }
+
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...options,
+      headers,
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    return await response.json()
+  }
+
+  // Función para hacer peticiones públicas (sin autenticación)
+  const makePublicRequest = async <T>(
+    endpoint: string, 
+    options: RequestInit = {}
+  ): Promise<T> => {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...options.headers as Record<string, string>,
+    }
+
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...options,
+      headers,
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    return await response.json()
+  }
+
+  // Función de login
+  const login = async (username: string, password: string) => {
     try {
-      const audience = import.meta.env.VITE_AUTH0_AUDIENCE
-      const authorizationParams = audience ? { audience } : {}
-      
-      const token = await getAccessTokenSilently({
-        authorizationParams,
+      const response = await makePublicRequest<LoginResponse>('/auth/login/', {
+        method: 'POST',
+        body: JSON.stringify({ username, password }),
       })
-      
-      // Only log non-sensitive info in development
-      if (import.meta.env.DEV) {
-        console.debug('🎫 Auth token acquired', {
-          exists: !!token,
-          length: token?.length,
+
+      setAuthToken(response.token)
+      localStorage.setItem('authToken', response.token)
+      return response
+    } catch (error) {
+      console.error('Login error:', error)
+      throw error
+    }
+  }
+
+  // Función de logout
+  const logout = async () => {
+    try {
+      if (authToken) {
+        await makeRequest('/auth/logout/', {
+          method: 'POST',
         })
       }
-      
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        ...options,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          ...options.headers,
-        },
-      })
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
-      return await response.json()
     } catch (error) {
-      console.error('API request failed:', error)
-      throw error
+      console.error('Error during logout:', error)
+    } finally {
+      setAuthToken(null)
+      localStorage.removeItem('authToken')
     }
   }
 
-  const makePublicRequest = async (endpoint: string, options: RequestInit = {}) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        ...options,
-        headers: {
-          'Content-Type': 'application/json',
-          ...options.headers,
-        },
-      })
+  // Métodos HTTP con autenticación
+  const get = <T>(endpoint: string) => makeRequest<T>(endpoint)
+  const post = <T>(endpoint: string, data: unknown) => 
+    makeRequest<T>(endpoint, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  const put = <T>(endpoint: string, data: unknown) => 
+    makeRequest<T>(endpoint, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  const del = <T>(endpoint: string) => 
+    makeRequest<T>(endpoint, { method: 'DELETE' })
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
-      return await response.json()
-    } catch (error) {
-      console.error('Public API request failed:', error)
-      throw error
-    }
-  }
-
-  const get = (endpoint: string) => makeRequest(endpoint)
-  
-  const post = (endpoint: string, data: unknown) => 
-    makeRequest(endpoint, {
+  // Métodos HTTP públicos (sin autenticación)
+  const publicGet = <T>(endpoint: string) => makePublicRequest<T>(endpoint)
+  const publicPost = <T>(endpoint: string, data: unknown) => 
+    makePublicRequest<T>(endpoint, {
       method: 'POST',
       body: JSON.stringify(data),
     })
 
-  const put = (endpoint: string, data: unknown) => 
-    makeRequest(endpoint, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    })
-
-  const del = (endpoint: string) => 
-    makeRequest(endpoint, { method: 'DELETE' })
-
-  // Public methods (no auth required)
-  const publicGet = (endpoint: string) => makePublicRequest(endpoint)
-
-  return { get, post, put, del, publicGet }
+  return {
+    // Métodos autenticados
+    get,
+    post,
+    put,
+    del,
+    
+    // Métodos públicos
+    publicGet,
+    publicPost,
+    
+    // Autenticación
+    login,
+    logout,
+    
+    // Estado
+    authToken,
+    isAuthenticated: !!authToken,
+    
+    // Función genérica (para casos especiales)
+    makeRequest,
+    makePublicRequest,
+  }
 }

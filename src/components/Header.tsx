@@ -1,15 +1,23 @@
 import { Search, User, LogOut } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Link } from 'react-router-dom'
-import { useAuth0 } from '@auth0/auth0-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '@/contexts/AuthContext'
 import logoUCChristus from '@/assets/logo-uc-christus.png'
 
 export function Header() {
-  const { logout, user } = useAuth0()
+  const navigate = useNavigate()
+  const { user, logout } = useAuth()
 
-  const handleLogout = () => {
-    logout({ logoutParams: { returnTo: window.location.origin } })
+  const handleLogout = async () => {
+    try {
+      await logout()
+      navigate('/login')
+    } catch (error) {
+      console.error('Error en logout:', error)
+      // Forzar navegación aunque haya error
+      navigate('/login')
+    }
   }
   return (
     <header className="bg-white border-b border-gray-100 px-6 py-4">
@@ -55,37 +63,28 @@ export function Header() {
               className="pl-10 w-64"
             />
           </div>
-          {/* User Info */}
+          {/* Información del usuario */}
           {user && (
-            <div className="flex items-center space-x-3">
-              <div className="text-right hidden md:block">
-                <p className="text-sm font-medium text-gray-900">{user.name}</p>
-                <p className="text-xs text-gray-500">{user.email}</p>
+            <div className="flex items-center gap-3 text-sm">
+              <div className="text-right">
+                <div className="font-medium text-gray-900">{user.nombre_completo}</div>
+                <div className="text-gray-500 text-xs">{user.rol}</div>
               </div>
-              
-              <Link 
-                to="/profile" 
-                className="flex items-center space-x-2 text-gray-600 transition-colors hover:text-[#671E75]"
-              >
-                {user.picture ? (
-                  <img 
-                    src={user.picture} 
-                    alt="Profile" 
-                    className="h-8 w-8 rounded-full"
-                  />
-                ) : (
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="transition-colors hover:text-[#671E75]"
-                  >
-                    <User className="h-6 w-6" />
-                  </Button>
-                )}
-              </Link>
             </div>
           )}
           
+          <Link 
+            to="/profile" 
+            className="text-gray-600 transition-colors hover:text-[#671E75]"
+          >
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="transition-colors hover:text-[#671E75]"
+            >
+              <User className="h-6 w-6" />
+            </Button>
+          </Link>
           <Button 
             variant="ghost" 
             size="icon" 

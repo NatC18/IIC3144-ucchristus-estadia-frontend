@@ -17,25 +17,46 @@ function App() {
     <Router>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/callback" element={<CallbackPage />} />
-        <Route path="/" element={<HomePage />} />
-        <Route path="/gestiones" element={<GestionesPage />} />
-        <Route path="/gestiones/create" element={<CreateGestionPage />} />
-        <Route path="/gestiones/:id" element={<GestionDetailPage />} />
-        <Route path="/pacientes" element={<PacientesPage />} />
-        <Route path="/pacientes/:id" element={<PacienteDetailPage />} />
+        <Route path="/" element={
+          <PrivateRoute>
+            <HomePage />
+          </PrivateRoute>
+        } />
+        <Route path="/gestiones" element={
+          <PrivateRoute>
+            <GestionesPage />
+          </PrivateRoute>
+        } />
+        <Route path="/gestiones/create" element={
+          <PrivateRoute>
+            <CreateGestionPage />
+          </PrivateRoute>
+        } />
+        <Route path="/gestiones/:id" element={
+          <PrivateRoute>
+            <GestionDetailPage />
+          </PrivateRoute>
+        } />
+        <Route path="/pacientes" element={
+          <PrivateRoute>
+            <PacientesPage />
+          </PrivateRoute>
+        } />
+        <Route path="/pacientes/:id" element={
+          <PrivateRoute>
+            <PacienteDetailPage />
+          </PrivateRoute>
+        } />
         <Route path="/dashboard" element={
-            <PrivateRoute>
-              <DashboardPage />
-            </PrivateRoute>
-          } 
-        />
+          <PrivateRoute>
+            <DashboardPage />
+          </PrivateRoute>
+        } />
         <Route path="/profile" element={
-            <PrivateRoute>
-              <ProfilePage />
-            </PrivateRoute>
-          }
-        />
+          <PrivateRoute>
+            <ProfilePage />
+          </PrivateRoute>
+        } />
 
       </Routes>
     </Router>
