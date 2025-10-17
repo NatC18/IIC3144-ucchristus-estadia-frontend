@@ -18,7 +18,7 @@ export function LoginPage() {
   // Redirigir si ya está autenticado
   useEffect(() => {
     if (isAuthenticated) {
-      const from = (location.state as any)?.from?.pathname || '/dashboard'
+      const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/dashboard'
       navigate(from, { replace: true })
     }
   }, [isAuthenticated, navigate, location])
@@ -28,7 +28,7 @@ export function LoginPage() {
     if (error) {
       clearError()
     }
-  }, [email, password, clearError])
+  }, [email, password, error, clearError])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -48,7 +48,7 @@ export function LoginPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [isAuthenticated, navigate])
+  }
 
   if (isLoading) {
     return (

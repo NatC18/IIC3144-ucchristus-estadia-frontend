@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { authService } from '@/services/authService'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api'
@@ -32,7 +32,7 @@ export function usePacientes() {
   const [error, setError] = useState<string | null>(null)
   const [totalCount, setTotalCount] = useState(0)
 
-  const fetchPacientes = async (filters?: {
+  const fetchPacientes = useCallback(async (filters?: {
     search?: string
     sexo?: string
     prevision?: string
@@ -52,7 +52,6 @@ export function usePacientes() {
 
       console.log('Fetching from:', url)
 
-      // Usar authService para hacer la petición autenticada
       // Usar authService para hacer la petición autenticada
       const response = await authService.fetchWithAuth(url, {
         method: 'GET',
@@ -76,12 +75,15 @@ export function usePacientes() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   // Cargar pacientes al montar el componente
   useEffect(() => {
     fetchPacientes()
-  }, [])
+  }, [fetchPacientes])
+
+  // Función de refetch memoizada
+  const refetch = useCallback(() => fetchPacientes(), [fetchPacientes])
 
   return {
     pacientes,
@@ -89,6 +91,6 @@ export function usePacientes() {
     error,
     totalCount,
     fetchPacientes,
-    refetch: () => fetchPacientes(),
+    refetch,
   }
 }

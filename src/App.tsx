@@ -8,7 +8,6 @@ import { LoginPage } from './pages/LoginPage'
 import { ProfilePage } from './pages/ProfilePage'
 import { PacientesPage } from './pages/PacientesPage'
 import { PacienteDetailPage } from './pages/PacienteDetailPage'
-import { CallbackPage } from './pages/CallbackPage'
 import { PrivateRoute } from './components/PrivateRoute'
 
 

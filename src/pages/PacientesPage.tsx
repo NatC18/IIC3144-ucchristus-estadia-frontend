@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Header } from '@/components/Header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -57,11 +57,11 @@ export function PacientesPage() {
   }
 
   // Función para buscar con filtros
-  const handleSearch = () => {
+  const handleSearch = useCallback(() => {
     fetchPacientes({
       search: searchTerm || undefined,
     })
-  }
+  }, [fetchPacientes, searchTerm])
 
   // Buscar automáticamente cuando cambie el término de búsqueda
   useEffect(() => {
@@ -74,7 +74,7 @@ export function PacientesPage() {
     }, 500) // Debounce de 500ms
 
     return () => clearTimeout(timer)
-  }, [searchTerm])
+  }, [searchTerm, handleSearch, refetch])
 
   return (
     <div className="min-h-screen bg-gray-100">
