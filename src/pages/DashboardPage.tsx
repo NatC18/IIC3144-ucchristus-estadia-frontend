@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
-import { useAuth0 } from '@auth0/auth0-react'
 import { Header } from '@/components/Header'
 import { TareasPendientes } from '@/components/TareasPendientes'
 import { ExtensionesCriticas } from '@/components/ExtensionesCriticas'
 import { AlertasPredichas } from '@/components/AlertasPredichas'
 import { EstadisticasTareasChart, TiposBarreraChart, TendenciaEstadiaChart } from '@/components/Charts'
 import { useApi } from '@/hooks/useApi'
+import { useAuth } from '@/contexts/AuthContext'
 import { Card, CardHeader, CardContent } from '@/components/ui/card'
 
 interface BackendData {
@@ -16,7 +16,7 @@ interface BackendData {
 }
 
 export function DashboardPage() {
-  const { user } = useAuth0()
+  const { user } = useAuth()
   const api = useApi()
   const [backendData, setBackendData] = useState<BackendData | null>(null)
   const [loading, setLoading] = useState(true)
@@ -24,8 +24,8 @@ export function DashboardPage() {
   useEffect(() => {
     const fetchBackendData = async () => {
       try {
-        const data = await api.publicGet('/user-info/')
-        setBackendData(data)
+        const data = await api.publicGet('/health/')
+        setBackendData(data as BackendData)
       } catch (error) {
         console.error('Error fetching backend data:', error)
       } finally {
@@ -55,8 +55,8 @@ export function DashboardPage() {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <h4 className="font-medium text-gray-700 mb-2">Usuario Auth0:</h4>
-                  <p className="text-sm text-gray-600">{user?.name || 'Cargando...'}</p>
+                  <h4 className="font-medium text-gray-700 mb-2">Usuario:</h4>
+                  <p className="text-sm text-gray-600">{user?.nombre_completo || 'Cargando...'}</p>
                   <p className="text-sm text-gray-500">{user?.email || 'Cargando...'}</p>
                 </div>
                 <div>

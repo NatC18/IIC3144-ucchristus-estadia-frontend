@@ -10,7 +10,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@auth0/auth0-react": "^2.6.0",
     "@fontsource/montserrat": "^5.2.8",
     "@radix-ui/react-slot": "^1.2.3",
     "class-variance-authority": "^0.7.0",
