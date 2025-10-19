@@ -125,7 +125,7 @@ export function PacientesPage() {
         <Card className="rounded-xl border-0">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-semibold">Todos los pacientes</CardTitle>
+              <CardTitle className="text-lg font-semibold">Todos los pacientes en UC Christus</CardTitle>
               <div className="flex items-center gap-4">
                 {/* Search */}
                 <div className="relative">
