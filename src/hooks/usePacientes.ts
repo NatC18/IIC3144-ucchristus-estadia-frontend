@@ -101,6 +101,8 @@ export function usePaciente() {
   const [error, setError] = useState<string | null>(null)
 
   const fetchPaciente = useCallback(async (id: string) => {
+
+    if (!id) return
     try {
       setLoading(true)
       setError(null)
@@ -139,3 +141,4 @@ export function usePaciente() {
     fetchPaciente,
   }
 }
+

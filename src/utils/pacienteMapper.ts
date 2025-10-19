@@ -2,7 +2,7 @@ import { PacienteAPI } from '../hooks/usePacientes'
 
 // Interfaz que usa el frontend (mantenemos la original del mockData)
 export interface Paciente {
-  id: number | string
+  id: string
   nombre: string
   score: number
   rut: string
