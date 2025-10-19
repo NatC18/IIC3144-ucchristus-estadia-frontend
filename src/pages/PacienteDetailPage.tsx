@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Header } from '@/components/Header'
 import { Button } from '@/components/ui/button'
@@ -6,9 +6,11 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { ArrowLeft } from 'lucide-react'
-import { pacientes, episodios, tareasPendientes, type Episodio, type TareaPendiente } from '@/data/mockData'
+import { usePaciente } from '@/hooks/usePacientes'
+import { episodios, tareasPendientes, type Episodio, type TareaPendiente } from '@/data/mockData'
 import { InformacionPaciente } from '@/components/InformacionPaciente'
 import { EpisodiosPacientes } from '@/components/EpisodiosPaciente'
+import { mapPacienteFromAPI, type Paciente } from '@/utils/pacienteMapper'
 
 function getEstadoColor(estado: TareaPendiente['estado']) {
   switch (estado) {
@@ -27,10 +29,24 @@ function getEstadoColor(estado: TareaPendiente['estado']) {
 export function PacienteDetailPage() {
   const navigate = useNavigate()
   const { id } = useParams()
-  const paciente = pacientes.find(p => p.id === parseInt(id || '0'))
+  const { 
+    paciente: pacienteAPI, 
+    loading, 
+    error, 
+    fetchPaciente,
+  } = usePaciente()
+
+  const paciente = pacienteAPI ? mapPacienteFromAPI(pacienteAPI) : null
+
   const [selectedEpisodio, setSelectedEpisodio] = useState<Episodio | null>(null)
 
-  if (!paciente) {
+  useEffect(() => {
+    if (id) {
+      fetchPaciente(id)
+    }
+  }, [id, fetchPaciente])
+
+  if (!pacienteAPI) {
     return (
       <div className="min-h-screen bg-gray-100">
         <Header />
@@ -59,21 +75,28 @@ export function PacienteDetailPage() {
         <div className="mb-8">
           <Button 
             variant="ghost" 
-            onClick={() => navigate('/gestiones')}
+            onClick={() => navigate('/pacientes')}
             className="mb-4 -ml-2"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Volver a Gestiones
+            Volver a Pacientes
           </Button>
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Detalle de Paciente</h1>
-            <p className="text-gray-600">Detalles del paciente {paciente.nombre}</p>
+            {/* If paciente is null, show an error: */}
+            {!paciente ? (
+              <p className="text-red-600">Paciente no encontrado</p>
+            ) : (
+              <p className="text-gray-600">Detalles del paciente {paciente?.nombre}</p>
+            )}
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="space-y-8">
-            <InformacionPaciente
+        {/* If paciente is null, dont show anything, else, show everything that is written */}
+        {paciente && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="space-y-8">
+              <InformacionPaciente
               nombre={paciente.nombre}
               rut={paciente.rut}
               edad={paciente.edad}
@@ -137,6 +160,7 @@ export function PacienteDetailPage() {
             )}
           </div>
         </div>
+        )}
       </main>
     </div>
   )

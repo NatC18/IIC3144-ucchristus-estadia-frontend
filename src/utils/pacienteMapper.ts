@@ -19,7 +19,7 @@ export function mapPacienteFromAPI(apiPaciente: PacienteAPI): Paciente {
     nombre: apiPaciente.nombre,
     score: apiPaciente.score_social || 0,
     rut: apiPaciente.rut,
-    prevision: apiPaciente.prevision,
+    prevision: apiPaciente.prevision_1,
     edad: apiPaciente.edad,
     sexo: apiPaciente.sexo === 'O' ? 'M' : apiPaciente.sexo, // Mapear 'O' a 'M' como fallback
     hospitalizado: Math.random() > 0.5, // Por ahora aleatorio, ya que no existe en el backend
