@@ -28,7 +28,10 @@ export function EpisodiosPacientes({
         {loading ? (
           <p className="text-gray-500 text-center py-4">Cargando episodios...</p>
         ) : error ? (
-          <p className="text-red-600 text-center py-4">{error}</p>
+          <>
+            {error && console.error(error)}
+            <p className="text-red-600 text-center py-4">Ocurrió un error al cargar los episodios</p>
+          </>
         ) : episodios.length === 0 ? (
           <p className="text-gray-500 text-center py-4">No hay episodios disponibles</p>
         ) : (
