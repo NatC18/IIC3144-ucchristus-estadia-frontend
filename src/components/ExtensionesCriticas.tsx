@@ -14,7 +14,7 @@ interface ExtensionesCriticasProps {
   loading?: boolean
 }
 
-function getDiasEstadiaColor(dias: number) {
+function getDiasEstadiaColor(_dias: number) {
   // Siempre color de alerta clínica (rosita)
   return 'bg-[#F3D7E0] text-[#B95E82] rounded-full whitespace-nowrap';
 }
