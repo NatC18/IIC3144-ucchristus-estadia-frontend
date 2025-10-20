@@ -37,11 +37,13 @@ export function PacienteDetailPage() {
   const paciente = pacienteAPI ? mapPacienteFromAPI(pacienteAPI) : null
 
   useEffect(() => {
-    if (id) {
-      fetchPaciente(id)
-      fetchEpisodiosPaciente(id)
-    }    
-  }, [id, fetchPaciente, fetchEpisodiosPaciente])
+    if (id) fetchPaciente(id)
+  }, [id, fetchPaciente])
+
+  useEffect(() => {
+    if (id) fetchEpisodiosPaciente(id)
+  }, [id, fetchEpisodiosPaciente])
+
 
   const episodios = episodiosPaciente.map(mapEpisodioFromAPI)
 
