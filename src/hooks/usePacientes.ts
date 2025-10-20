@@ -11,7 +11,7 @@ export interface PacienteAPI {
   sexo: 'M' | 'F' | 'O'
   fecha_nacimiento: string
   edad: number
-  prevision: 'FONASA' | 'ISAPRE' | 'PARTICULAR' | 'OTRO'
+  prevision_1: 'FONASA' | 'ISAPRE' | 'PARTICULAR' | 'OTRO'
   convenio?: string
   score_social?: number
   created_at: string
@@ -94,3 +94,51 @@ export function usePacientes() {
     refetch,
   }
 }
+
+export function usePaciente() {
+  const [paciente, setPaciente] = useState<PacienteAPI | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchPaciente = useCallback(async (id: string) => {
+
+    if (!id) return
+    try {
+      setLoading(true)
+      setError(null)
+
+      const url = `${API_BASE_URL}/pacientes/${id}`
+
+      console.log('Fetching from:', url)
+
+      // Usar authService para hacer la petición autenticada
+      const response = await authService.fetchWithAuth(url, {
+        method: 'GET',
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data: PacienteAPI = await response.json()
+
+      setPaciente(data)
+      console.log('Paciente loaded:', data)
+
+    } catch (err) {
+      console.error('Error fetching paciente:', err)
+      setError(err instanceof Error ? err.message : 'Error desconocido')
+      setPaciente(null)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  return {
+    paciente,
+    loading,
+    error,
+    fetchPaciente,
+  }
+}
+
