@@ -16,6 +16,7 @@ interface ExtensionesCriticasProps {
 
 function getDiasEstadiaColor(_dias: number) {
   // Siempre color de alerta clínica (rosita)
+  void _dias; // usado para cumplir linter (param intencionalmente ignorado)
   return 'bg-[#F3D7E0] text-[#B95E82] rounded-full whitespace-nowrap';
 }
 
