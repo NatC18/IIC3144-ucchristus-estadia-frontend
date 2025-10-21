@@ -38,7 +38,8 @@ export function EpisodioDetailPage() {
   const { id } = useParams<{ id: string }>()
   const { episodio, loading, error } = useEpisodio(id)
   const { gestiones, loading: loadingGestiones } = useGestiones(episodio?.id)
-  const { paciente } = usePaciente(episodio?.paciente)
+  const { paciente } = usePaciente(episodio?.paciente ?? undefined)
+
 
 
   if (loading) {
