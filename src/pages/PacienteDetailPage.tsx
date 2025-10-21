@@ -151,9 +151,16 @@ export function PacienteDetailPage() {
                         <TableHead>Estado</TableHead>
                       </TableRow>
                     </TableHeader>
+                    {/* Placeholder when loading gestiones */}
                     <TableBody>
-                      {gestiones
-                        .map((g, i) => (
+                      {loadingGestiones ? (
+                        <TableRow>
+                          <TableCell colSpan={3} className="text-center">
+                            Cargando gestiones...
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        gestiones.map((g, i) => (
                           <TableRow key={i}>
                             <TableCell>{g.tipo_gestion}</TableCell>
                             <TableCell>{g.informe}</TableCell>
@@ -163,7 +170,8 @@ export function PacienteDetailPage() {
                               </Badge>
                             </TableCell>
                           </TableRow>
-                        ))}
+                        ))
+                      )}
                     </TableBody>
                   </Table>
                 </CardContent>
