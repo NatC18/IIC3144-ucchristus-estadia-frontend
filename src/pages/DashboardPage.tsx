@@ -3,8 +3,9 @@ import { Header } from '@/components/Header'
 import { TareasPendientes } from '@/components/TareasPendientes'
 import { ExtensionesCriticas } from '@/components/ExtensionesCriticas'
 import { AlertasPredichas } from '@/components/AlertasPredichas'
-import { EstadisticasTareasChart, TiposBarreraChart, TendenciaEstadiaChart } from '@/components/Charts'
+import { EstadisticasTareasChart, TiposGestionChart, TendenciaEstadiaChart } from '@/components/Charts'
 import { useApi } from '@/hooks/useApi'
+import { useDashboard } from '@/hooks/useDashboard'
 import { useAuth } from '@/contexts/AuthContext'
 import { Card, CardHeader, CardContent } from '@/components/ui/card'
 
@@ -19,7 +20,18 @@ export function DashboardPage() {
   const { user } = useAuth()
   const api = useApi()
   const [backendData, setBackendData] = useState<BackendData | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [healthLoading, setHealthLoading] = useState(true)
+  
+  // Hook personalizado con todos los datos del dashboard
+  const {
+    stats,
+    tareasPendientes,
+    extensionesCriticas,
+    estadisticasGestiones,
+    tendenciaEstadia,
+    loading: dashboardLoading,
+    error: dashboardError
+  } = useDashboard()
   
   useEffect(() => {
     const fetchBackendData = async () => {
@@ -29,13 +41,14 @@ export function DashboardPage() {
       } catch (error) {
         console.error('Error fetching backend data:', error)
       } finally {
-        setLoading(false)
+        setHealthLoading(false)
       }
     }
     
     fetchBackendData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Empty dependency array - fetch only once on mount
+
   return (
     <div className="min-h-screen bg-gray-100">
       <Header />
@@ -61,7 +74,7 @@ export function DashboardPage() {
                 </div>
                 <div>
                   <h4 className="font-medium text-gray-700 mb-2">Backend:</h4>
-                  {loading ? (
+                  {healthLoading ? (
                     <p className="text-sm text-yellow-600">Conectando...</p>
                   ) : backendData ? (
                     <div>
@@ -77,22 +90,45 @@ export function DashboardPage() {
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <EstadisticasTareasChart />
-          <TiposBarreraChart />
-          <TendenciaEstadiaChart />
-        </div>
+        {/* Error del dashboard */}
+        {dashboardError && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-800">Error al cargar datos del dashboard: {dashboardError}</p>
+          </div>
+        )}
 
+        {/* Gráficos de estadísticas */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <EstadisticasTareasChart 
+            data={estadisticasGestiones?.por_estado || []} 
+            loading={dashboardLoading}
+          />
+          <TiposGestionChart 
+            data={estadisticasGestiones?.por_tipo_gestion || []} 
+            loading={dashboardLoading}
+          />
+          <TendenciaEstadiaChart 
+            data={tendenciaEstadia} 
+            loading={dashboardLoading}
+          />
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="space-y-8">
-            <TareasPendientes />
-            <ExtensionesCriticas />
+            <TareasPendientes 
+              tareas={tareasPendientes} 
+              loading={dashboardLoading}
+            />
+            <ExtensionesCriticas 
+              extensiones={extensionesCriticas} 
+              loading={dashboardLoading}
+            />
           </div>
 
           <div className="space-y-8">
             <AlertasPredichas />
             
+            {/* Tarjetas de métricas */}
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-white p-6 rounded-xl border-0">
                 <div className="flex items-center">
@@ -102,8 +138,10 @@ export function DashboardPage() {
                     </svg>
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Total Pacientes</p>
-                    <p className="text-2xl font-bold text-gray-900">156</p>
+                    <p className="text-sm font-medium text-gray-600">Episodios Activos</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {dashboardLoading ? '...' : stats?.episodios_activos || 0}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -117,7 +155,9 @@ export function DashboardPage() {
                   </div>
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">Altas Hoy</p>
-                    <p className="text-2xl font-bold text-gray-900">12</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {dashboardLoading ? '...' : stats?.altas_hoy || 0}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -131,7 +171,9 @@ export function DashboardPage() {
                   </div>
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600">Promedio Estadía</p>
-                    <p className="text-2xl font-bold text-gray-900">8.2 días</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {dashboardLoading ? '...' : `${stats?.promedio_estadia_dias || 0} días`}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -144,8 +186,10 @@ export function DashboardPage() {
                     </svg>
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-600">Alertas Activas</p>
-                    <p className="text-2xl font-bold text-gray-900">7</p>
+                    <p className="text-sm font-medium text-gray-600">Extensiones Críticas</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {dashboardLoading ? '...' : stats?.extensiones_criticas || 0}
+                    </p>
                   </div>
                 </div>
               </div>
