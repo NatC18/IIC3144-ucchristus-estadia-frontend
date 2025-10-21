@@ -103,14 +103,14 @@ export function GestionesPage() {
               <RefreshCcw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
               Actualizar
             </Button>
-            <Button 
+            {/* <Button 
               onClick={() => navigate('/gestiones/create')}
               className="flex items-center gap-2 text-white hover:text-white"
               style={{ backgroundColor: '#671E75' }}
             >
               <Plus className="h-4 w-4" />
               Nueva Gestión
-            </Button>
+            </Button> */}
           </div>
         </div>
 

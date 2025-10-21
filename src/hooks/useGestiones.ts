@@ -15,6 +15,7 @@ export interface Gestion {
   created_at: string
   updated_at: string
   usuario?: string
+  usuario_nombre?: string
   paciente_id?: string
   paciente_nombre?: string
 }
@@ -177,5 +178,8 @@ export function useGestion(id: string) {
     fetchGestion()
   }, [fetchGestion])
 
+  
+
   return { gestion, loading, error, refetch: fetchGestion }
+
 }
