@@ -11,7 +11,8 @@ export interface PacienteAPI {
   sexo: 'M' | 'F' | 'O'
   fecha_nacimiento: string
   edad: number
-  prevision: 'FONASA' | 'ISAPRE' | 'PARTICULAR' | 'OTRO'
+  prevision_1: 'FONASA' | 'ISAPRE' | 'PARTICULAR' | 'OTRO'
+  prevision_2: 'FONASA' | 'ISAPRE' | 'PARTICULAR' | 'OTRO'
   convenio?: string
   score_social?: number
   created_at: string
