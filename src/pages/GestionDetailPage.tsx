@@ -23,8 +23,7 @@ function getEstadoColor(estado: TareaPendiente['estado']) {
 export function GestionDetailPage() {
   const navigate = useNavigate()
   const { id } = useParams()
-  
-  // Buscar la tarea por ID (en este ejemplo usamos el índice)
+
   const tareaIndex = parseInt(id || '0')
   const tareaInicial = tareasPendientes[tareaIndex] || tareasPendientes[0]
   
@@ -36,10 +35,7 @@ export function GestionDetailPage() {
   }
 
   const handleSave = () => {
-    // TODO: Guardar cambios en la API
-    console.log('Guardando cambios:', tarea)
     setIsEditing(false)
-    // Opcional: mostrar notificación de éxito
   }
 
   return (

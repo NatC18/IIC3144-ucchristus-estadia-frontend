@@ -43,6 +43,9 @@ export function Header() {
             <Link to="/pacientes" className="text-gray-600 transition-colors hover:text-[#671E75]">
               Pacientes
             </Link>
+            <Link to="/episodios" className="text-gray-600 transition-colors hover:text-[#671E75]">
+              Episodios
+            </Link>
             <Link to="#" className="text-gray-600 transition-colors hover:text-[#671E75]">
               Alertas
             </Link>

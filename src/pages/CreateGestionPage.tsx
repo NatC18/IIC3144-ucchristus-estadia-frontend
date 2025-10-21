@@ -19,9 +19,6 @@ export function CreateGestionPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: Handle task creation (e.g., send to API)
-    console.log('Nueva gestión creada:', formData)
-    // Navigate back to gestiones page after creation
     navigate('/gestiones')
   }
 

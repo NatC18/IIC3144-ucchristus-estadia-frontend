@@ -12,6 +12,7 @@ export interface PacienteAPI {
   fecha_nacimiento: string
   edad: number
   prevision_1: 'FONASA' | 'ISAPRE' | 'PARTICULAR' | 'OTRO'
+  prevision_2: 'FONASA' | 'ISAPRE' | 'PARTICULAR' | 'OTRO'
   convenio?: string
   score_social?: number
   created_at: string
@@ -50,8 +51,6 @@ export function usePacientes() {
       const queryString = params.toString()
       const url = `${API_BASE_URL}/pacientes/${queryString ? `?${queryString}` : ''}`
 
-      console.log('Fetching from:', url)
-
       // Usar authService para hacer la petición autenticada
       const response = await authService.fetchWithAuth(url, {
         method: 'GET',
@@ -66,7 +65,6 @@ export function usePacientes() {
       setPacientes(data.results || [])
       setTotalCount(data.count || 0)
       
-      console.log('Pacientes loaded:', data.results?.length || 0)
       
     } catch (err) {
       console.error('Error fetching pacientes:', err)

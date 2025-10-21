@@ -4,6 +4,9 @@ import { DashboardPage } from './pages/DashboardPage'
 import { GestionesPage } from './pages/GestionesPage'
 import { CreateGestionPage } from './pages/CreateGestionPage'
 import { GestionDetailPage } from './pages/GestionDetailPage'
+import { EpisodiosPage } from './pages/EpisodiosPage'
+// import { CreateEpisodioPage } from './pages/CreateEpisodioPage'
+import { EpisodioDetailPage } from './pages/EpisodioDetailPage'
 import { LoginPage } from './pages/LoginPage'
 import { ProfilePage } from './pages/ProfilePage'
 import { PacientesPage } from './pages/PacientesPage'
@@ -34,6 +37,21 @@ function App() {
         <Route path="/gestiones/:id" element={
           <PrivateRoute>
             <GestionDetailPage />
+          </PrivateRoute>
+        } />
+        <Route path="/episodios" element={
+          <PrivateRoute>
+            <EpisodiosPage />
+          </PrivateRoute>
+        } />
+        {/* <Route path="/episodios/create" element={
+          <PrivateRoute>
+            <CreateGestionPage />
+          </PrivateRoute>
+        } /> */}
+        <Route path="/episodios/:id" element={
+          <PrivateRoute>
+            <EpisodioDetailPage />
           </PrivateRoute>
         } />
         <Route path="/pacientes" element={
