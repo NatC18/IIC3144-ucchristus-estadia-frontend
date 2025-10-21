@@ -1,8 +1,22 @@
 import { useState, useEffect } from 'react'
 import { authService } from '@/services/authService'
-import type { PacienteAPI } from './usePacientes'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api'
+
+export interface PacienteAPI {
+  id: string
+  rut: string
+  nombre: string
+  sexo: 'M' | 'F' | 'O'
+  fecha_nacimiento: string
+  edad: number
+  prevision_1: 'FONASA' | 'ISAPRE' | 'PARTICULAR' | 'OTRO'
+  prevision_2: 'FONASA' | 'ISAPRE' | 'PARTICULAR' | 'OTRO'
+  convenio?: string
+  score_social?: number
+  created_at: string
+  updated_at: string
+}
 
 export function usePaciente(id?: string) {
   const [paciente, setPaciente] = useState<PacienteAPI | null>(null)
