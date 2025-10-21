@@ -13,20 +13,7 @@ import { InformacionPaciente } from '@/components/InformacionPaciente'
 import { EpisodiosPacientes } from '@/components/EpisodiosPaciente'
 import { mapPacienteFromAPI } from '@/utils/pacienteMapper'
 import { mapEpisodioFromAPI, type Episodio } from '@/utils/episodioMapper'
-
-function getEstadoGestionColor(estado: string) {
-  if (!estado) return 'bg-gray-100 text-gray-800 rounded-full px-3 py-1'
-
-  switch (estado.toUpperCase()) {
-    case 'COMPLETADA':
-      return 'bg-green-100 text-green-800 rounded-full px-3 py-1'
-    case 'EN_PROGRESO':
-      return 'bg-yellow-100 text-yellow-800 rounded-full px-3 py-1'
-    default:
-      return 'bg-gray-100 text-gray-800 rounded-full px-3 py-1'
-  }
-}
-
+import { getEstadoGestionColor } from '@/lib/transformations'
 
 export function PacienteDetailPage() {
   const navigate = useNavigate()
