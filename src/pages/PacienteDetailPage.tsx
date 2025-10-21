@@ -8,24 +8,25 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ArrowLeft } from 'lucide-react'
 import { usePaciente } from '@/hooks/usePacientes'
 import { useEpisodiosPaciente } from '@/hooks/useEpisodiosPaciente'
-import { tareasPendientes, type TareaPendiente } from '@/data/mockData'
+import { useGestiones } from '@/hooks/useGestiones'
 import { InformacionPaciente } from '@/components/InformacionPaciente'
 import { EpisodiosPacientes } from '@/components/EpisodiosPaciente'
 import { mapPacienteFromAPI } from '@/utils/pacienteMapper'
 import { mapEpisodioFromAPI, type Episodio } from '@/utils/episodioMapper'
 
-function getEstadoColor(estado: TareaPendiente['estado']) {
-  switch (estado) {
-    case 'Abierta':
-      return 'bg-[#FBF2CC] text-[#E3AE00]'
-    case 'En proceso':
-      return 'bg-[#ECEFCF] text-[#8FA31E]'
-    case 'Cerrada':
-      return 'bg-gray-100 text-gray-800'
+function getEstadoGestionColor(estado: string) {
+  if (!estado) return 'bg-gray-100 text-gray-800 rounded-full px-3 py-1'
+
+  switch (estado.toUpperCase()) {
+    case 'COMPLETADA':
+      return 'bg-green-100 text-green-800 rounded-full px-3 py-1'
+    case 'EN_PROGRESO':
+      return 'bg-yellow-100 text-yellow-800 rounded-full px-3 py-1'
     default:
-      return 'bg-gray-100 text-gray-800'
+      return 'bg-gray-100 text-gray-800 rounded-full px-3 py-1'
   }
 }
+
 
 export function PacienteDetailPage() {
   const navigate = useNavigate()
@@ -44,8 +45,13 @@ export function PacienteDetailPage() {
     if (id) fetchEpisodiosPaciente(id)
   }, [id, fetchEpisodiosPaciente])
 
-
   const episodios = episodiosPaciente.map(mapEpisodioFromAPI)
+
+  const { gestiones, loading: loadingGestiones } = useGestiones(selectedEpisodio?.id)
+
+  useEffect(() => {
+    console.log(gestiones, "gestiones cargadas en PacienteDetailPage")
+  }, [gestiones])
 
   // Loading state
   if (loading) {
@@ -146,15 +152,14 @@ export function PacienteDetailPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {tareasPendientes
-                        .filter(t => t.episodio === selectedEpisodio.episodio_cmbd)
-                        .map((t, i) => (
+                      {gestiones
+                        .map((g, i) => (
                           <TableRow key={i}>
-                            <TableCell>{t.tipoBarrera}</TableCell>
-                            <TableCell>{t.descripcion}</TableCell>
+                            <TableCell>{g.tipo_gestion}</TableCell>
+                            <TableCell>{g.informe}</TableCell>
                             <TableCell>
-                              <Badge variant="outline" className={`${getEstadoColor(t.estado)} rounded-full whitespace-nowrap`}>
-                                {t.estado}
+                              <Badge className={getEstadoGestionColor(g.estado_gestion)}>
+                                {g.estado_gestion === 'COMPLETADA' ? 'Cerrada' : g.estado_gestion === 'EN_PROGRESO' ? 'En progreso' : 'Abierta'}
                               </Badge>
                             </TableCell>
                           </TableRow>
