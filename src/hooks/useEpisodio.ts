@@ -37,6 +37,7 @@ export function useEpisodio(id?: string) {
         const data = await res.json()
         setEpisodio(data)
       } catch (err) {
+        console.error('Error cargando episodio:', err)
         setError('No se pudo cargar el episodio')
       } finally {
         setLoading(false)
