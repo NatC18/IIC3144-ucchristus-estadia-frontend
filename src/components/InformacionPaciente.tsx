@@ -10,17 +10,6 @@ type InformacionPacienteProps = Pick<
   'nombre' | 'rut' | 'edad' | 'sexo' | 'prevision' | 'score' | 'hospitalizado'
 >
 
-// function getHospitalizacionColor(hospitalizado: Paciente['hospitalizado']) {
-//   switch (hospitalizado) {
-//     case true:
-//       return 'bg-blue-100 text-blue-800 rounded-full whitespace-nowrap'
-//     case false:
-//       return 'bg-gray-100 text-gray-800 rounded-full whitespace-nowrap'
-//     default:
-//       return 'bg-gray-100 text-gray-800 rounded-full whitespace-nowrap'
-//   }
-// }
-
 export function InformacionPaciente({
   nombre,
   rut,
