@@ -66,7 +66,9 @@ export function EpisodiosPage() {
             <p className="text-gray-600">Monitoreo y gestión de episodios clínicos</p>
           </div>
           <Button 
-            onClick={() => navigate('/episodios/create')}
+            // onClick={() => navigate('/episodios/create')}
+            //for now there is no route to create episodio
+            onClick={() => {}}
             className="flex items-center gap-2 text-white hover:text-white"
             style={{ backgroundColor: '#671E75' }}
           >

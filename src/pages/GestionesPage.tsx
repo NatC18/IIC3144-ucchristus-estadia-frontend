@@ -1,20 +1,22 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Header } from '@/components/Header'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Plus, Search, Filter } from 'lucide-react'
+import { Search, Filter, Loader2, AlertCircle, RefreshCcw } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { tareasPendientes, type TareaPendiente } from '@/data/mockData'
+import { useGestiones, type Gestion } from '@/hooks/useGestiones'
 
-function getEstadoColor(estado: TareaPendiente['estado']) {
+function getEstadoColor(estado: Gestion['estado_gestion']) {
   switch (estado) {
-    case 'Abierta':
+    case 'INICIADA':
       return 'bg-[#FBF2CC] text-[#E3AE00] rounded-full whitespace-nowrap'
-    case 'En proceso':
+    case 'EN_PROGRESO':
       return 'bg-[#ECEFCF] text-[#8FA31E] rounded-full whitespace-nowrap'
-    case 'Cerrada':
+    case 'COMPLETADA':
+      return 'bg-gray-100 text-gray-800 rounded-full whitespace-nowrap'
+    case 'CERRADA':
       return 'bg-gray-100 text-gray-800 rounded-full whitespace-nowrap'
     default:
       return 'bg-gray-100 text-gray-800 rounded-full whitespace-nowrap'
@@ -26,23 +28,56 @@ export function GestionesPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterEstado, setFilterEstado] = useState<string>('all')
 
-  // Filter tasks based on search and filter
-  const filteredTareas = tareasPendientes.filter(tarea => {
+  // Usar el hook para obtener datos del backend
+  const {
+    gestiones,
+    loading,
+    error,
+    totalCount,
+    fetchGestiones,
+  } = useGestiones()
+
+  // Filter gestiones based on search and filter
+  const filteredGestiones = gestiones.filter(gestion => {
     const matchesSearch = 
-      tarea.episodio.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tarea.tipoBarrera.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tarea.descripcion.toLowerCase().includes(searchTerm.toLowerCase())
+      gestion.episodio.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      gestion.tipo_gestion.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      gestion.informe.toLowerCase().includes(searchTerm.toLowerCase())
     
-    const matchesFilter = filterEstado === 'all' || tarea.estado === filterEstado
+    const matchesFilter = filterEstado === 'all' || gestion.estado_gestion === filterEstado
 
     return matchesSearch && matchesFilter
   })
 
   // Statistics
-  const totalTareas = tareasPendientes.length
-  const abiertas = tareasPendientes.filter(t => t.estado === 'Abierta').length
-  const enProceso = tareasPendientes.filter(t => t.estado === 'En proceso').length
-  const cerradas = tareasPendientes.filter(t => t.estado === 'Cerrada').length
+  const totalGestiones = gestiones.length
+  const iniciadas = gestiones.filter(g => g.estado_gestion === 'INICIADA').length
+  const enProgreso = gestiones.filter(g => g.estado_gestion === 'EN_PROGRESO').length
+  const cerradas = gestiones.filter(g => g.estado_gestion === 'CERRADA').length
+  const completadas = gestiones.filter(g => g.estado_gestion === 'COMPLETADA').length
+
+
+  // Función para refrescar datos
+  const handleRefresh = () => {
+    fetchGestiones()
+  }
+
+  // Función para buscar con filtros
+  const handleSearch = useCallback(() => {
+    fetchGestiones({
+      search: searchTerm || undefined,
+      estado: filterEstado === 'all' ? undefined : filterEstado,
+    })
+  }, [fetchGestiones, searchTerm, filterEstado])
+
+  // Buscar automáticamente cuando cambien los filtros
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      handleSearch()
+    }, 500) // Debounce de 500ms
+
+    return () => clearTimeout(timer)
+  }, [searchTerm, filterEstado, handleSearch])
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -53,20 +88,45 @@ export function GestionesPage() {
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Gestiones</h1>
-            <p className="text-gray-600">Gestión de tareas y barreras hospitalarias</p>
+            <p className="text-gray-600">
+              Gestión de tareas y barreras hospitalarias
+              {totalCount > 0 && ` (${totalCount} gestiones)`}
+            </p>
           </div>
-          <Button 
-            onClick={() => navigate('/gestiones/create')}
-            className="flex items-center gap-2 text-white hover:text-white"
-            style={{ backgroundColor: '#671E75' }}
-          >
-            <Plus className="h-4 w-4" />
-            Nueva Gestión
-          </Button>
+          <div className="flex items-center gap-4">
+            <Button 
+              onClick={handleRefresh} 
+              variant="outline" 
+              disabled={loading}
+              className="flex items-center gap-2"
+            >
+              <RefreshCcw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              Actualizar
+            </Button>
+            
+          </div>
         </div>
 
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4">
+            <div className="flex items-center gap-2 text-red-600">
+              <AlertCircle className="h-4 w-4" />
+              <span>Error al cargar gestiones: {error}</span>
+              <Button 
+                onClick={handleRefresh} 
+                variant="outline" 
+                size="sm"
+                className="ml-auto"
+              >
+                Reintentar
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
           <div className="bg-white p-6 rounded-xl border-0">
             <div className="flex items-center">
               <div className="p-3 rounded-xl" style={{ backgroundColor: '#f3e8ff' }}>
@@ -76,7 +136,7 @@ export function GestionesPage() {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total Gestiones</p>
-                <p className="text-2xl font-bold text-gray-900">{totalTareas}</p>
+                <p className="text-2xl font-bold text-gray-900">{totalGestiones}</p>
               </div>
             </div>
           </div>
@@ -89,8 +149,8 @@ export function GestionesPage() {
                 </svg>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Abiertas</p>
-                <p className="text-2xl font-bold text-gray-900">{abiertas}</p>
+                <p className="text-sm font-medium text-gray-600">Iniciadas</p>
+                <p className="text-2xl font-bold text-gray-900">{iniciadas}</p>
               </div>
             </div>
           </div>
@@ -104,7 +164,20 @@ export function GestionesPage() {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">En Proceso</p>
-                <p className="text-2xl font-bold text-gray-900">{enProceso}</p>
+                <p className="text-2xl font-bold text-gray-900">{enProgreso}</p>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white p-6 rounded-xl border-0">
+            <div className="flex items-center">
+              <div className="p-3 rounded-xl" style={{ backgroundColor: '#d1efcfff' }}>
+                <svg className="w-6 h-6" style={{ color: '#8FA31E' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Completadas</p>
+                <p className="text-2xl font-bold text-gray-900">{completadas}</p>
               </div>
             </div>
           </div>
@@ -117,7 +190,7 @@ export function GestionesPage() {
                 </svg>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Cerradas</p>
+                <p className="text-sm font-medium text-gray-600">Canceladas</p>
                 <p className="text-2xl font-bold text-gray-900">{cerradas}</p>
               </div>
             </div>
@@ -150,9 +223,10 @@ export function GestionesPage() {
                     onChange={(e) => setFilterEstado(e.target.value)}
                   >
                     <option value="all">Todos los estados</option>
-                    <option value="Abierta">Abierta</option>
-                    <option value="En proceso">En proceso</option>
-                    <option value="Cerrada">Cerrada</option>
+                    <option value="INICIADA">Iniciada</option>
+                    <option value="EN_PROCESO">En proceso</option>
+                    <option value="COMPLETADA">Completada</option>
+                    <option value="CERRADA">Cerrada</option>
                   </select>
                 </div>
               </div>
@@ -163,25 +237,32 @@ export function GestionesPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Episodio</TableHead>
-                  <TableHead>Tipo de Barrera</TableHead>
-                  <TableHead>Descripción</TableHead>
+                  <TableHead>Tipo de Gestión</TableHead>
                   <TableHead>Estado</TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredTareas.length > 0 ? (
-                  filteredTareas.map((tarea, index) => (
-                    <TableRow key={index}>
-                      <TableCell className="font-medium">{tarea.episodio}</TableCell>
-                      <TableCell>{tarea.tipoBarrera}</TableCell>
-                      <TableCell>{tarea.descripcion}</TableCell>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-8">
+                      <div className="flex items-center justify-center gap-2 text-gray-500">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Cargando gestiones...
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : filteredGestiones.length > 0 ? (
+                  filteredGestiones.map((gestion) => (
+                    <TableRow key={gestion.id}>
+                      <TableCell className="font-medium">{gestion.episodio_cmbd}</TableCell>
+                      <TableCell>{gestion.tipo_gestion}</TableCell>
                       <TableCell>
                         <Badge 
                           variant="outline" 
-                          className={getEstadoColor(tarea.estado)}
+                          className={getEstadoColor(gestion.estado_gestion)}
                         >
-                          {tarea.estado}
+                          {gestion.estado_gestion}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
@@ -189,7 +270,7 @@ export function GestionesPage() {
                           variant="ghost" 
                           size="sm" 
                           className="text-[#671E75] hover:bg-purple-50"
-                          onClick={() => navigate(`/gestiones/${index}`)}
+                          onClick={() => navigate(`/gestiones/${gestion.id}`)}
                         >
                           Ver detalles
                         </Button>
@@ -199,7 +280,10 @@ export function GestionesPage() {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-8 text-gray-500">
-                      No se encontraron gestiones que coincidan con tu búsqueda
+                      {searchTerm || filterEstado !== 'all' ? 
+                        'No se encontraron gestiones que coincidan con tu búsqueda' :
+                        'No hay gestiones disponibles'
+                      }
                     </TableCell>
                   </TableRow>
                 )}

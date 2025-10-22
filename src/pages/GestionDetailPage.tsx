@@ -1,41 +1,107 @@
 import { useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { Header } from '@/components/Header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft } from 'lucide-react'
-import { tareasPendientes, type TareaPendiente } from '@/data/mockData'
+import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react'
+import { Gestion, useGestion, useGestiones } from '@/hooks/useGestiones'
 
-function getEstadoColor(estado: TareaPendiente['estado']) {
+function getEstadoColor(estado: string) {
   switch (estado) {
-    case 'Abierta':
+    case 'INICIADA':
       return 'bg-[#FBF2CC] text-[#E3AE00] rounded-full whitespace-nowrap'
-    case 'En proceso':
+    case 'EN_PROGRESO':
       return 'bg-[#ECEFCF] text-[#8FA31E] rounded-full whitespace-nowrap'
-    case 'Cerrada':
+    case 'COMPLETADA':
+    case 'CERRADA':
       return 'bg-gray-100 text-gray-800 rounded-full whitespace-nowrap'
     default:
       return 'bg-gray-100 text-gray-800 rounded-full whitespace-nowrap'
   }
 }
 
+function getEstadoLabel(estado: string) {
+  switch (estado) {
+    case 'INICIADA':
+      return 'Iniciada'
+    case 'EN_PROGRESO':
+      return 'En Progreso'
+    case 'COMPLETADA':
+      return 'Completada'
+    case 'CERRADA':
+      return 'Cerrada'
+    default:
+      return estado
+  }
+}
+
 export function GestionDetailPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { id } = useParams()
-
-  const tareaIndex = parseInt(id || '0')
-  const tareaInicial = tareasPendientes[tareaIndex] || tareasPendientes[0]
+  const { gestion, loading, error, refetch } = useGestion(id || '')
   
-  const [tarea, setTarea] = useState<TareaPendiente>(tareaInicial)
+  // Get navigation source from location state
+  const from = (location.state as { from?: string, episodioId?: string } | null)
+  const isFromEpisodio = from?.from === 'episodio'
+  const sourceEpisodioId = from?.episodioId
+  const { updateGestion } = useGestiones()
   const [isEditing, setIsEditing] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
 
-  const handleEstadoChange = (nuevoEstado: TareaPendiente['estado']) => {
-    setTarea({ ...tarea, estado: nuevoEstado })
+  const handleEstadoChange = async (nuevoEstado: Gestion['estado_gestion']) => {
+    if (!gestion) return
+    setIsSaving(true)
+    try {
+      
+      await updateGestion(gestion.id, { estado_gestion: nuevoEstado })
+      await refetch()
+      setIsEditing(false)
+    } catch (err) {
+      console.error('Error updating estado:', err)
+    } finally {
+      setIsSaving(false)
+    }
   }
 
-  const handleSave = () => {
-    setIsEditing(false)
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="flex items-center gap-2 text-gray-500">
+          <Loader2 className="h-5 w-5 animate-spin" />
+          <span>Cargando gestión...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !gestion) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="bg-white p-6 rounded-lg shadow-sm max-w-md w-full">
+          <div className="flex items-center gap-2 text-red-600 mb-4">
+            <AlertCircle className="h-5 w-5" />
+            <span className="font-medium">Error al cargar la gestión</span>
+          </div>
+          <p className="text-gray-600 mb-4">{error || 'No se encontró la gestión solicitada'}</p>
+          <Button 
+            onClick={() => {
+              if (isFromEpisodio && sourceEpisodioId) {
+                navigate(`/episodios/${sourceEpisodioId}`)
+              } else {
+                navigate('/gestiones')
+              }
+            }}
+            variant="outline"
+            className="w-full"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            {isFromEpisodio ? 'Volver al Episodio' : 'Volver a Gestiones'}
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -47,15 +113,29 @@ export function GestionDetailPage() {
         <div className="mb-8">
           <Button 
             variant="ghost" 
-            onClick={() => navigate('/gestiones')}
+            onClick={() => {
+              if (isFromEpisodio && sourceEpisodioId) {
+                navigate(`/episodios/${sourceEpisodioId}`)
+              } else {
+                navigate('/gestiones')
+              }
+            }}
             className="mb-4 -ml-2"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Volver a Gestiones
+            {isFromEpisodio ? 'Volver al Episodio' : 'Volver a Gestiones'}
           </Button>
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Detalle de Gestión</h1>
-            <p className="text-gray-600">Episodio {tarea.episodio}</p>
+            <p className="text-gray-600">
+              {gestion.paciente_nombre ? (
+                <>
+                  Episodio {gestion.episodio_cmbd} - {gestion.paciente_nombre}
+                </>
+              ) : (
+                <>Episodio {gestion.episodio_cmbd}</>
+              )}
+            </p>
           </div>
         </div>
 
@@ -72,17 +152,17 @@ export function GestionDetailPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm font-medium text-gray-600 mb-1">Episodio</p>
-                    <p className="text-base font-semibold text-gray-900">{tarea.episodio}</p>
+                    <p className="text-base font-semibold text-gray-900">{gestion.episodio_cmbd}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">Tipo de Barrera</p>
-                    <p className="text-base text-gray-900">{tarea.tipoBarrera}</p>
+                    <p className="text-sm font-medium text-gray-600 mb-1">Tipo de Gestión</p>
+                    <p className="text-base font-semibold text-gray-900">{gestion.tipo_gestion}</p>
                   </div>
                 </div>
                 
                 <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Descripción</p>
-                  <p className="text-base text-gray-900">{tarea.descripcion}</p>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Informe</p>
+                  <p className="text-base text-gray-900">{gestion.informe}</p>
                 </div>
 
                 <div>
@@ -90,30 +170,41 @@ export function GestionDetailPage() {
                   {isEditing ? (
                     <div className="flex gap-2">
                       <Button
-                        variant={tarea.estado === 'Abierta' ? 'default' : 'outline'}
-                        onClick={() => handleEstadoChange('Abierta')}
-                        className={tarea.estado === 'Abierta' ? 'bg-[#E3AE00] hover:bg-[#E3AE00]/90' : ''}
+                        variant={gestion.estado_gestion === 'INICIADA' ? 'default' : 'outline'}
+                        onClick={() => handleEstadoChange('INICIADA')}
+                        disabled={isSaving}
+                        className={gestion.estado_gestion === 'INICIADA' ? 'bg-[#E3AE00] hover:bg-[#E3AE00]/90' : ''}
                       >
-                        Abierta
+                        Iniciada
                       </Button>
                       <Button
-                        variant={tarea.estado === 'En proceso' ? 'default' : 'outline'}
-                        onClick={() => handleEstadoChange('En proceso')}
-                        className={tarea.estado === 'En proceso' ? 'bg-[#8FA31E] hover:bg-[#8FA31E]/90' : ''}
+                        variant={gestion.estado_gestion === 'EN_PROGRESO' ? 'default' : 'outline'}
+                        onClick={() => handleEstadoChange('EN_PROGRESO')}
+                        disabled={isSaving}
+                        className={gestion.estado_gestion === 'EN_PROGRESO' ? 'bg-[#8FA31E] hover:bg-[#8FA31E]/90' : ''}
                       >
-                        En proceso
+                        En Progreso
                       </Button>
                       <Button
-                        variant={tarea.estado === 'Cerrada' ? 'default' : 'outline'}
-                        onClick={() => handleEstadoChange('Cerrada')}
-                        className={tarea.estado === 'Cerrada' ? 'bg-gray-600 hover:bg-gray-600/90' : ''}
+                        variant={gestion.estado_gestion === 'COMPLETADA' ? 'default' : 'outline'}
+                        onClick={() => handleEstadoChange('COMPLETADA')}
+                        disabled={isSaving}
+                        className={gestion.estado_gestion === 'COMPLETADA' ? 'bg-gray-600 hover:bg-[#d1efcfff]/90' : ''}
+                      >
+                        Completada
+                      </Button>
+                      {/* <Button
+                        variant={gestion.estado_gestion === 'CERRADA' ? 'default' : 'outline'}
+                        onClick={() => handleEstadoChange('CERRADA')}
+                        disabled={isSaving}
+                        className={gestion.estado_gestion === 'CERRADA' ? 'bg-gray-600 hover:bg-gray-600/90' : ''}
                       >
                         Cerrada
-                      </Button>
+                      </Button> */}
                     </div>
                   ) : (
-                    <Badge variant="outline" className={getEstadoColor(tarea.estado)}>
-                      {tarea.estado}
+                    <Badge variant="outline" className={getEstadoColor(gestion.estado_gestion)}>
+                      {getEstadoLabel(gestion.estado_gestion)}
                     </Badge>
                   )}
                 </div>
@@ -131,21 +222,19 @@ export function GestionDetailPage() {
                   ) : (
                     <div className="flex gap-2">
                       <Button 
-                        onClick={handleSave}
+                        onClick={() => setIsEditing(false)}
                         className="text-white hover:text-white"
                         style={{ backgroundColor: '#671E75' }}
+                        disabled={isSaving}
                       >
-                        Guardar Cambios
+                        {isSaving ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            Guardando...
+                          </>
+                        ) : 'Cancelar'}
                       </Button>
-                      <Button 
-                        variant="outline"
-                        onClick={() => {
-                          setTarea(tareaInicial)
-                          setIsEditing(false)
-                        }}
-                      >
-                        Cancelar
-                      </Button>
+                      
                     </div>
                   )}
                 </div>
@@ -153,7 +242,7 @@ export function GestionDetailPage() {
             </Card>
 
             {/* Historial de Cambios */}
-            <Card className="rounded-xl border-0 bg-white">
+            {/* <Card className="rounded-xl border-0 bg-white">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold">Historial de Cambios</CardTitle>
               </CardHeader>
@@ -188,7 +277,7 @@ export function GestionDetailPage() {
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </Card> */}
           </div>
 
           {/* Sidebar */}
@@ -200,17 +289,53 @@ export function GestionDetailPage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Fecha de creación</p>
-                  <p className="text-sm text-gray-900">15 Oct 2025</p>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Fecha de Inicio</p>
+                  <p className="text-sm text-gray-900">
+                    {new Date(gestion.fecha_inicio).toLocaleDateString('es-CL', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </p>
+                </div>
+                {gestion.fecha_fin && (
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 mb-1">Fecha de Término</p>
+                    <p className="text-sm text-gray-900">
+                      {new Date(gestion.fecha_fin).toLocaleDateString('es-CL', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </p>
+                  </div>
+                )}
+                <div>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Creación</p>
+                  <p className="text-sm text-gray-900">
+                    {new Date(gestion.created_at).toLocaleDateString('es-CL', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">Última actualización</p>
-                  <p className="text-sm text-gray-900">Hace 2 horas</p>
+                  <p className="text-sm text-gray-900">
+                    {new Date(gestion.updated_at).toLocaleDateString('es-CL', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </p>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Responsable</p>
-                  <p className="text-sm text-gray-900">Equipo de Gestión</p>
-                </div>
+                {gestion.usuario && (
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 mb-1">Responsable</p>
+                    <p className="text-sm text-gray-900">{gestion.usuario_nombre}</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 

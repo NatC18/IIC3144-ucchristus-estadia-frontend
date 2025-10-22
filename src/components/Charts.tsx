@@ -46,7 +46,7 @@ export function EstadisticasTareasChart({ data, loading }: EstadisticasTareasCha
   return (
     <Card className="rounded-xl border-0 bg-white">
       <CardHeader>
-        <CardTitle className="text-lg font-semibold">Estado de Tareas</CardTitle>
+        <CardTitle className="text-lg font-semibold">Estado de Gestiones</CardTitle>
       </CardHeader>
       <CardContent>
         {loading ? (
@@ -120,7 +120,7 @@ export function TiposGestionChart({ data, loading }: TiposGestionChartProps) {
   return (
     <Card className="rounded-xl border-0 bg-white">
       <CardHeader>
-        <CardTitle className="text-lg font-semibold">Tipos de Barrera</CardTitle>
+        <CardTitle className="text-lg font-semibold">Tipos de Gestiones</CardTitle>
       </CardHeader>
       <CardContent>
         {loading ? (
