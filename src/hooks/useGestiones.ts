@@ -31,6 +31,7 @@ export interface PaginatedResponse<T> {
 // Interfaz para crear/actualizar gestión
 export interface GestionInput {
   episodio: string
+  usuario?: string
   tipo_gestion: string
   informe: string
   estado_gestion: 'INICIADA' | 'EN_PROGRESO' | 'COMPLETADA' | 'CERRADA'

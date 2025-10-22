@@ -3,10 +3,11 @@ import { Header } from '@/components/Header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Plus } from 'lucide-react'
 import { useEpisodio } from '@/hooks/useEpisodio'
 import { usePaciente } from '@/hooks/usePaciente'
 import { useGestiones } from '@/hooks/useGestiones'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 
 function getTipoColor(tipo: string) {
@@ -164,71 +165,71 @@ export function EpisodioDetailPage() {
               </CardContent>
             </Card>
 
-            {/* Información del Paciente */}
-            <Card className="rounded-xl border-0 bg-white">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold">Datos del Paciente</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">RUT</p>
-                    <p className="text-base text-gray-900">{paciente?.rut || 'N/A'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">Previsión</p>
-                    <p className="text-base text-gray-900">{paciente?.prevision_1 || 'N/A'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">Previsión Adicional</p>
-                    <p className="text-base text-gray-900">{paciente?.prevision_2 || 'N/A'}</p>
-                  </div>                  
-                </div>
-              </CardContent>
-            </Card>
             {/* Gestiones asociadas al episodio */}
-            <Card className="rounded-xl border-0 bg-white">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold">Gestiones Asociadas</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {loadingGestiones ? (
-                  <p className="text-gray-500">Cargando gestiones...</p>
-                ) : gestiones.length === 0 ? (
-                  <p className="text-gray-500">No hay gestiones registradas para este episodio.</p>
-                ) : (
-                  <ul className="divide-y divide-gray-100">
-                    {gestiones.map((g) => (
-                      <li key={g.id} className="py-3">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <p className="font-medium text-gray-900">{g.tipo_gestion}</p>
-                            <p className="text-sm text-gray-600">{g.informe || 'Sin descripción'}</p>
-                            <p className="text-xs text-gray-500 mt-1">
-                              Inicio: {new Date(g.fecha_inicio).toLocaleDateString('es-CL')}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <Badge
-                              className={
-                                g.estado_gestion === 'COMPLETADA'
-                                  ? 'bg-green-100 text-green-800'
-                                  : g.estado_gestion === 'EN_PROGRESO'
-                                  ? 'bg-yellow-100 text-yellow-800'
-                                  : 'bg-gray-100 text-gray-800'
-                              }
-                            >
-                              {g.estado_gestion}
-                            </Badge>
-                          </div>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </CardContent>
-            </Card>
+            <Table className="rounded-xl border-0 bg-white">
 
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Tipo de Gestión</TableHead>
+                  <TableHead>Fecha de Inicio</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead>Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loadingGestiones ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center text-gray-500">
+                      Cargando gestiones...
+                    </TableCell>
+                  </TableRow>
+                ) : gestiones.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center text-gray-500">
+                      No hay gestiones registradas para este episodio.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  gestiones.map((g) => (
+                    <TableRow key={g.id}>
+                      <TableCell>{g.tipo_gestion}</TableCell>
+                      <TableCell>
+                        {new Date(g.fecha_inicio).toLocaleDateString('es-CL')}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          className={
+                            g.estado_gestion === 'COMPLETADA'
+                              ? 'bg-green-100 text-green-800'
+                              : g.estado_gestion === 'EN_PROGRESO'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : 'bg-gray-100 text-gray-800'
+                          }
+                        >
+                          {g.estado_gestion}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="text-[#671E75] hover:bg-purple-50"
+                          onClick={() => navigate(`/gestiones/${g.id}`, {
+                            state: {
+                              from: 'episodio',
+                              episodioId: episodio.id
+                            }
+                          })}
+                        >
+                          Ver detalles
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>  
+            </Table>
+            
 
           </div>
 
@@ -257,7 +258,6 @@ export function EpisodioDetailPage() {
                 </div>
               </CardContent>
             </Card>
-
             <Card className="rounded-xl border-0 bg-blue-50">
               <CardContent className="pt-6">
                 <div className="flex gap-3">
@@ -283,6 +283,36 @@ export function EpisodioDetailPage() {
                 </div>
               </CardContent>
             </Card>
+            {/* Información del Paciente */}
+            <Card className="rounded-xl border-0 bg-white">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">Datos del Paciente</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 mb-1">RUT</p>
+                    <p className="text-base text-gray-900">{paciente?.rut || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 mb-1">Previsión</p>
+                    <p className="text-base text-gray-900">{paciente?.prevision_1 || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 mb-1">Previsión Adicional</p>
+                    <p className="text-base text-gray-900">{paciente?.prevision_2 || 'N/A'}</p>
+                  </div>                  
+                </div>
+              </CardContent>
+            </Card>
+            <Button
+              onClick={() => navigate('/gestiones/create', { state: { episodioId: episodio.id, episodio_cmbd: episodio.episodio_cmbd } })}
+              className="flex items-center gap-2 text-white hover:text-white"
+              style={{ backgroundColor: '#671E75' }}
+            >
+              <Plus className="h-4 w-4" />
+              Nueva Gestión
+            </Button>
           </div>
         </div>
       </main>

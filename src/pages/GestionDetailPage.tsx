@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { Header } from '@/components/Header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -38,8 +38,14 @@ function getEstadoLabel(estado: string) {
 
 export function GestionDetailPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { id } = useParams()
   const { gestion, loading, error, refetch } = useGestion(id || '')
+  
+  // Get navigation source from location state
+  const from = (location.state as { from?: string, episodioId?: string } | null)
+  const isFromEpisodio = from?.from === 'episodio'
+  const sourceEpisodioId = from?.episodioId
   const { updateGestion } = useGestiones()
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -79,12 +85,18 @@ export function GestionDetailPage() {
           </div>
           <p className="text-gray-600 mb-4">{error || 'No se encontró la gestión solicitada'}</p>
           <Button 
-            onClick={() => navigate('/gestiones')}
+            onClick={() => {
+              if (isFromEpisodio && sourceEpisodioId) {
+                navigate(`/episodios/${sourceEpisodioId}`)
+              } else {
+                navigate('/gestiones')
+              }
+            }}
             variant="outline"
             className="w-full"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Volver a Gestiones
+            {isFromEpisodio ? 'Volver al Episodio' : 'Volver a Gestiones'}
           </Button>
         </div>
       </div>
@@ -100,11 +112,17 @@ export function GestionDetailPage() {
         <div className="mb-8">
           <Button 
             variant="ghost" 
-            onClick={() => navigate('/gestiones')}
+            onClick={() => {
+              if (isFromEpisodio && sourceEpisodioId) {
+                navigate(`/episodios/${sourceEpisodioId}`)
+              } else {
+                navigate('/gestiones')
+              }
+            }}
             className="mb-4 -ml-2"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Volver a Gestiones
+            {isFromEpisodio ? 'Volver al Episodio' : 'Volver a Gestiones'}
           </Button>
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Detalle de Gestión</h1>
