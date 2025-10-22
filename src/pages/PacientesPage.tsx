@@ -8,18 +8,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Search, Filter, Loader2, AlertCircle, RefreshCcw } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { usePacientes } from '@/hooks/usePacientes'
-import { mapPacienteFromAPI, type Paciente } from '@/utils/pacienteMapper'
+import { mapPacienteFromAPI } from '@/utils/pacienteMapper'
+import { getHospitalizacionColor } from '@/lib/transformations'
 
-function getHospitalizacionColor(hospitalizado: Paciente['hospitalizado']) {
-  switch (hospitalizado) {
-    case true:
-      return 'bg-blue-100 text-blue-800 rounded-full whitespace-nowrap'
-    case false:
-      return 'bg-gray-100 text-gray-800 rounded-full whitespace-nowrap'
-    default:
-      return 'bg-gray-100 text-gray-800 rounded-full whitespace-nowrap'
-  }
-}
+
 
 export function PacientesPage() {
   const navigate = useNavigate()
