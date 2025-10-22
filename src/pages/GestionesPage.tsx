@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Plus, Search, Filter, Loader2, AlertCircle, RefreshCcw } from 'lucide-react'
+import { Search, Filter, Loader2, AlertCircle, RefreshCcw } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useGestiones, type Gestion } from '@/hooks/useGestiones'
 
@@ -256,7 +256,7 @@ export function GestionesPage() {
                   filteredGestiones.map((gestion) => (
                     <TableRow key={gestion.id}>
                       <TableCell className="font-medium">{gestion.episodio_cmbd}</TableCell>
-                      <TableCell>{gestion.informe}</TableCell>
+                      <TableCell>{gestion.tipo_gestion}</TableCell>
                       <TableCell>
                         <Badge 
                           variant="outline" 

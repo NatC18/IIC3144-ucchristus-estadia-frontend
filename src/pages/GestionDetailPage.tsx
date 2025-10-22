@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react'
-import { useGestion, useGestiones } from '@/hooks/useGestiones'
+import { Gestion, useGestion, useGestiones } from '@/hooks/useGestiones'
 
 function getEstadoColor(estado: string) {
   switch (estado) {
@@ -50,11 +50,12 @@ export function GestionDetailPage() {
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
 
-  const handleEstadoChange = async (nuevoEstado: string) => {
+  const handleEstadoChange = async (nuevoEstado: Gestion['estado_gestion']) => {
     if (!gestion) return
     setIsSaving(true)
     try {
-      await updateGestion(gestion.id, { estado_gestion: nuevoEstado as any })
+      
+      await updateGestion(gestion.id, { estado_gestion: nuevoEstado })
       await refetch()
       setIsEditing(false)
     } catch (err) {

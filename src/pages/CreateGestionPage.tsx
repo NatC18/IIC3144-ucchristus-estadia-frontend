@@ -4,7 +4,7 @@ import { Header } from '@/components/Header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { ArrowLeft, FileChartColumn, Loader2 } from 'lucide-react'
+import { ArrowLeft, Loader2 } from 'lucide-react'
 import { useGestiones } from '@/hooks/useGestiones'
 import { useAuth } from '@/contexts/AuthContext'
 
