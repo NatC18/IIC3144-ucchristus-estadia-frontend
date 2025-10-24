@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Header } from '@/components/Header'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -114,10 +114,10 @@ export function PacientesPage() {
         )}
 
         {/* Main Content - Tasks Table */}
-        <Card className="rounded-xl border-0">
-          <CardHeader>
+        <div className="bg-white rounded-xl border-0">
+          <div className="p-6 border-b border-gray-100">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-semibold">Todos los pacientes en UC Christus</CardTitle>
+              <h2 className="text-lg font-semibold">Todos los pacientes en UC Christus</h2>
               <div className="flex items-center gap-4">
                 {/* Search */}
                 <div className="relative">
@@ -145,8 +145,8 @@ export function PacientesPage() {
                 </div>
               </div>
             </div>
-          </CardHeader>
-          <CardContent>
+          </div>
+          <div className="p-6">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -205,8 +205,8 @@ export function PacientesPage() {
                 )}
               </TableBody>
             </Table>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </main>
     </div>
   )
