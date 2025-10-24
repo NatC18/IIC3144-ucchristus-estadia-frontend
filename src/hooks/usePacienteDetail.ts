@@ -3,7 +3,8 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
-import { pacienteDetailService, type PacienteDetail, type Episodio } from '@/services/pacienteDetailService'
+import { pacienteDetailService } from '@/services/pacienteDetailService'
+import type { PacienteDetail, Episodio } from '@/types'
 
 interface UsePacienteDetailResult {
   paciente: PacienteDetail | null

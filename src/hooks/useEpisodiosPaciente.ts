@@ -1,11 +1,11 @@
 import { useState, useCallback } from 'react'
 import { authService } from '@/services/authService'
-import { type EpisodioAPI } from '@/utils/episodioMapper' // ajusta según tu proyecto
+import type { Episodio } from '@/types'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api'
 
 export function useEpisodiosPaciente() {
-  const [episodiosPaciente, setEpisodiosPaciente] = useState<EpisodioAPI[]>([])
+  const [episodiosPaciente, setEpisodiosPaciente] = useState<Episodio[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -27,7 +27,7 @@ export function useEpisodiosPaciente() {
         throw new Error(`Error fetching episodios: ${response.statusText}`)
       }
 
-      const data: EpisodioAPI[] = await response.json()
+      const data: Episodio[] = await response.json()
 
       console.log(`Episodios from paciente ${id} loaded:`, data)
 

@@ -2,42 +2,14 @@
  * Servicio para manejar las operaciones relacionadas con el detalle de pacientes
  */
 
+import type {
+  PacienteDetail,
+  PacienteHistorial,
+  PacienteEstadisticas,
+  Episodio,
+} from '@/types'
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api'
-
-export interface PacienteDetail {
-  id: string
-  rut: string
-  nombre: string
-  sexo: 'M' | 'F' | 'O'
-  fecha_nacimiento: string
-  edad: number
-  prevision_1?: string
-  prevision_2?: string
-  convenio?: string
-  score_social?: number
-  created_at: string
-  updated_at: string
-  episodios: Episodio[]
-}
-
-export interface Episodio {
-  id: string
-  episodio_cmbd: number
-  fecha_ingreso: string
-  fecha_egreso?: string
-  tipo_actividad: string
-  inlier_outlier_flag?: string
-  especialidad?: string
-  estancia_prequirurgica?: number
-  estancia_postquirurgica?: number
-  estancia_norma_grd?: number
-  estancia_dias: number
-  cama?: {
-    id: string
-    codigo_cama: string
-    habitacion: string
-  }
-}
 
 class PacienteDetailService {
   private getAuthHeaders() {
@@ -91,7 +63,7 @@ class PacienteDetailService {
   /**
    * Obtiene el historial de un paciente
    */
-  async getPacienteHistorial(pacienteId: string): Promise<any> {
+  async getPacienteHistorial(pacienteId: string): Promise<PacienteHistorial> {
     try {
       const response = await fetch(`${API_BASE_URL}/pacientes/${pacienteId}/historial/`, {
         method: 'GET',
@@ -112,7 +84,7 @@ class PacienteDetailService {
   /**
    * Obtiene estadísticas del paciente
    */
-  async getPacienteEstadisticas(pacienteId: string): Promise<any> {
+  async getPacienteEstadisticas(pacienteId: string): Promise<PacienteEstadisticas> {
     try {
       // Por ahora calculamos estadísticas básicas del lado del cliente
       const pacienteDetail = await this.getPacienteDetail(pacienteId)
