@@ -1,26 +1,8 @@
 import { useState, useEffect } from 'react'
 import { authService } from '@/services/authService'
+import type { Episodio, PaginatedResponse } from '@/types'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api'
-
-export interface Episodio {
-  id: string
-  episodio_cmbd: string
-  especialidad: string
-  tipo_actividad: string
-  fecha_ingreso: string
-  fecha_egreso: string | null
-  estancia_norma_grd?: number
-  estancia_prequirurgica?: number
-  estancia_postquirurgica?: number
-  paciente: string | null
-  cama?: {
-    id: string
-    codigo_cama: string
-  } | null
-  created_at: string
-  updated_at: string
-}
 
 export function useEpisodios() {
   const [episodios, setEpisodios] = useState<Episodio[]>([])
@@ -32,8 +14,11 @@ export function useEpisodios() {
       try {
         const res = await authService.fetchWithAuth(`${API_BASE_URL}/episodios/`)
         if (!res.ok) throw new Error(`HTTP error ${res.status}`)
-        const json = await res.json()
-        setEpisodios(json.results || json)
+        const json = await res.json() as PaginatedResponse<Episodio> | Episodio[]
+        
+        // Manejar respuesta paginada o array directo
+        const episodiosData = Array.isArray(json) ? json : json.results
+        setEpisodios(episodiosData)
       } catch (err) {
         console.error('Error cargando episodios:', err)
         setError('No se pudieron cargar los episodios')

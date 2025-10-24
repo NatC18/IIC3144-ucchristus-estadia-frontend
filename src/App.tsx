@@ -11,6 +11,7 @@ import { LoginPage } from './pages/LoginPage'
 import { ProfilePage } from './pages/ProfilePage'
 import { PacientesPage } from './pages/PacientesPage'
 import { PacienteDetailPage } from './pages/PacienteDetailPage'
+import { ExcelManagementPage } from './pages/ExcelManagement'
 import { PrivateRoute } from './components/PrivateRoute'
 
 
@@ -72,6 +73,11 @@ function App() {
         <Route path="/profile" element={
           <PrivateRoute>
             <ProfilePage />
+          </PrivateRoute>
+        } />
+        <Route path="/excel-management" element={
+          <PrivateRoute>
+            <ExcelManagementPage />
           </PrivateRoute>
         } />
 

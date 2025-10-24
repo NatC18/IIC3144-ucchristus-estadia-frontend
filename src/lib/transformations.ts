@@ -1,4 +1,4 @@
-import { type Paciente } from "@/utils/pacienteMapper"
+import { type PacienteSimplificado } from "@/utils/pacienteMapper"
 
 export function getEstadoGestionColor(estado: string) {
   if (!estado) return 'bg-gray-100 text-gray-800 rounded-full px-3 py-1'
@@ -13,7 +13,7 @@ export function getEstadoGestionColor(estado: string) {
   }
 }
 
-export function getHospitalizacionColor(hospitalizado: Paciente['hospitalizado']) {
+export function getHospitalizacionColor(hospitalizado: PacienteSimplificado['hospitalizado']) {
   switch (hospitalizado) {
     case true:
       return 'bg-blue-100 text-blue-800 rounded-full whitespace-nowrap'

@@ -1,41 +1,25 @@
-export interface EpisodioAPI {
-  id: string
-  paciente: string
-  cama: string
-  episodio_cmbd: string
-  fecha_ingreso: string
-  fecha_egreso: string | null
-  tipo_actividad: string
-  inlier_outlier_flag: string
-  especialidad: string
-  estancia_prequirurgica: number
-  estancia_postquirurgica: number
-  estancia_norma_grd: number
-  estancia_dias: number
-  created_at: string
-  updated_at: string
-}
+import type { Episodio as EpisodioAPI, Cama } from '@/types'
 
-// Interfaz que se usa en el frontend
+// Interfaz para episodio con fechas como objetos Date (para uso en componentes)
 export interface Episodio {
   id: string
   paciente: string
-  cama: string
-  episodio_cmbd: string
+  cama?: Cama | null
+  episodio_cmbd: number
   fecha_ingreso: Date
   fecha_egreso: Date | null
   tipo_actividad: string
-  inlier_outlier_flag: string
-  especialidad: string
-  estancia_prequirurgica: number
-  estancia_postquirurgica: number
-  estancia_norma_grd: number
+  inlier_outlier_flag?: string | null
+  especialidad?: string | null
+  estancia_prequirurgica?: number | null
+  estancia_postquirurgica?: number | null
+  estancia_norma_grd?: number | null
   estancia_dias: number
   created_at: Date
   updated_at: Date
 }
 
-// Función para mapear datos del API al formato del frontend
+// Función para mapear datos del API al formato del frontend con fechas como Date
 export function mapEpisodioFromAPI(apiEpisodio: EpisodioAPI): Episodio {
   return {
     id: apiEpisodio.id,
