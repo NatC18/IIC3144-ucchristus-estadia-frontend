@@ -1,26 +1,14 @@
-import { useEffect, useState } from 'react'
+ 
 import { Header } from '@/components/Header'
 import { TareasPendientes } from '@/components/TareasPendientes'
 import { ExtensionesCriticas } from '@/components/ExtensionesCriticas'
 import { AlertasPredichas } from '@/components/AlertasPredichas'
 import { EstadisticasTareasChart, TiposGestionChart, TendenciaEstadiaChart } from '@/components/Charts'
-import { useApi } from '@/hooks/useApi'
 import { useDashboard } from '@/hooks/useDashboard'
-import { useAuth } from '@/contexts/AuthContext'
-import { Card, CardHeader, CardContent } from '@/components/ui/card'
-
-interface BackendData {
-  status?: string
-  message?: string
-  version?: string
-  [key: string]: unknown
-}
+ 
 
 export function DashboardPage() {
-  const { user } = useAuth()
-  const api = useApi()
-  const [backendData, setBackendData] = useState<BackendData | null>(null)
-  const [healthLoading, setHealthLoading] = useState(true)
+  
   
   // Hook personalizado con todos los datos del dashboard
   const {
@@ -33,21 +21,7 @@ export function DashboardPage() {
     error: dashboardError
   } = useDashboard()
   
-  useEffect(() => {
-    const fetchBackendData = async () => {
-      try {
-        const data = await api.publicGet('/health/')
-        setBackendData(data as BackendData)
-      } catch (error) {
-        console.error('Error fetching backend data:', error)
-      } finally {
-        setHealthLoading(false)
-      }
-    }
-    
-    fetchBackendData()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // Empty dependency array - fetch only once on mount
+  
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -59,36 +33,7 @@ export function DashboardPage() {
           <p className="text-gray-600">Gestión centralizada de estadías hospitalarias</p>
         </div>
 
-        {/* Auth0 Connection Status */}
-        <div className="mb-6">
-          <Card className="bg-white border-1 shadow">
-            <CardHeader>
-              <h3 className="text-lg font-semibold text-gray-900">Estado de Conexión</h3>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <h4 className="font-medium text-gray-700 mb-2">Usuario:</h4>
-                  <p className="text-sm text-gray-600">{user?.nombre_completo || 'Cargando...'}</p>
-                  <p className="text-sm text-gray-500">{user?.email || 'Cargando...'}</p>
-                </div>
-                <div>
-                  <h4 className="font-medium text-gray-700 mb-2">Backend:</h4>
-                  {healthLoading ? (
-                    <p className="text-sm text-yellow-600">Conectando...</p>
-                  ) : backendData ? (
-                    <div>
-                      <p className="text-sm text-green-600">✅ Conectado</p>
-                      <p className="text-xs text-gray-500">{backendData.message}</p>
-                    </div>
-                  ) : (
-                    <p className="text-sm text-red-600">❌ Error de conexión</p>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Estado de Conexión removido a solicitud del usuario */}
 
         {/* Error del dashboard */}
         {dashboardError && (
