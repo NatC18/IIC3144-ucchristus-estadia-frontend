@@ -1,49 +1,34 @@
 /**
  * Página principal para la gestión de archivos Excel
- * Integra la carga de archivos, el monitoreo de estado y la lista de archivos
+ * Integra la carga de múltiples archivos Excel y el monitoreo de estadísticas
  */
 
 import { useState } from 'react';
-import { FileSpreadsheet, Upload, List, BarChart3 } from 'lucide-react';
+import { FileSpreadsheet, Upload, BarChart3 } from 'lucide-react';
 import { Header } from '../components/Header';
-import { FileUpload } from '../components/FileUpload';
-import { FileStatus } from '../components/FileStatus';
-import { FilesListComponent } from '../components/FilesList';
+import { ExcelMultiUpload } from '../components/ExcelMultiUpload';
+import { ImportStats } from '../components/ImportStats';
 
 export function ExcelManagementPage() {
-  const [currentArchivoId, setCurrentArchivoId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'upload' | 'status' | 'list'>('upload');
+  const [activeTab, setActiveTab] = useState<'upload' | 'stats'>('upload');
 
-  // Cuando se sube un archivo exitosamente, cambiar a la pestaña de estado
-  const handleUploadSuccess = (archivoId: string) => {
-    setCurrentArchivoId(archivoId);
-    setActiveTab('status');
-  };
-
-  // Para ver el estado de un archivo desde la lista
-  const handleViewFileStatus = (archivoId: string) => {
-    setCurrentArchivoId(archivoId);
-    setActiveTab('status');
+  // Cuando se sube un archivo exitosamente, cambiar a la pestaña de estadísticas
+  const handleUploadSuccess = () => {
+    setActiveTab('stats');
   };
 
   const tabs = [
     {
       key: 'upload' as const,
-      label: 'Subir Archivo',
+      label: 'Subir Archivos',
       icon: Upload,
-      description: 'Cargar nuevos archivos Excel'
+      description: 'Cargar los 3 archivos Excel requeridos'
     },
     {
-      key: 'status' as const,
-      label: 'Estado',
+      key: 'stats' as const,
+      label: 'Estadísticas',
       icon: BarChart3,
-      description: 'Monitorear procesamiento'
-    },
-    {
-      key: 'list' as const,
-      label: 'Historial',
-      icon: List,
-      description: 'Ver archivos subidos'
+      description: 'Ver estadísticas de importación'
     }
   ];
 
@@ -110,36 +95,11 @@ export function ExcelManagementPage() {
         {/* Tab Content */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           {activeTab === 'upload' && (
-            <FileUpload onUploadSuccess={handleUploadSuccess} />
+            <ExcelMultiUpload onUploadSuccess={handleUploadSuccess} />
           )}
           
-          {activeTab === 'status' && (
-            <div>
-              {currentArchivoId ? (
-                <FileStatus archivoId={currentArchivoId} />
-              ) : (
-                <div className="text-center p-8">
-                  <BarChart3 className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    Selecciona un archivo
-                  </h3>
-                  <p className="text-gray-500 mb-4">
-                    Sube un archivo desde la pestaña "Subir Archivo" o selecciona uno del historial
-                  </p>
-                  <button
-                    onClick={() => setActiveTab('upload')}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
-                  >
-                    <Upload className="h-4 w-4" />
-                    Ir a Subir Archivo
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-          
-          {activeTab === 'list' && (
-            <FilesListComponent onViewFile={handleViewFileStatus} />
+          {activeTab === 'stats' && (
+            <ImportStats />
           )}
         </div>
       </div>
@@ -149,16 +109,16 @@ export function ExcelManagementPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-gray-600">
             <div>
-              <h4 className="font-medium text-gray-900 mb-2">Formatos Soportados</h4>
-              <p>Archivos Excel (.xlsx, .xls) con datos de usuarios, productos o ambos</p>
+              <h4 className="font-medium text-gray-900 mb-2">Archivos Requeridos</h4>
+              <p>Debes subir exactamente 3 archivos Excel (.xlsx, .xls) con datos distribuidos que se crucen por episodio CMBD</p>
             </div>
             <div>
               <h4 className="font-medium text-gray-900 mb-2">Procesamiento</h4>
-              <p>Los archivos se procesan en segundo plano. Puedes monitorear el progreso en tiempo real.</p>
+              <p>Los archivos se procesan inmediatamente. El sistema cruza los datos automáticamente y pobla la base de datos.</p>
             </div>
             <div>
-              <h4 className="font-medium text-gray-900 mb-2">Permisos</h4>
-              <p>Esta funcionalidad está disponible solo para usuarios administradores.</p>
+              <h4 className="font-medium text-gray-900 mb-2">Estadísticas</h4>
+              <p>Puedes ver las estadísticas de importación en tiempo real después de cada carga exitosa.</p>
             </div>
           </div>
         </div>
