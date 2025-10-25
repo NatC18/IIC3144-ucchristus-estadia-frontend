@@ -2,7 +2,6 @@
 import { Header } from '@/components/Header'
 import { TareasPendientes } from '@/components/TareasPendientes'
 import { ExtensionesCriticas } from '@/components/ExtensionesCriticas'
-import { AlertasPredichas } from '@/components/AlertasPredichas'
 import { EstadisticasTareasChart, TiposGestionChart, TendenciaEstadiaChart } from '@/components/Charts'
 import { useDashboard } from '@/hooks/useDashboard'
  
@@ -18,6 +17,7 @@ export function DashboardPage() {
     estadisticasGestiones,
     tendenciaEstadia,
     sinScoreSocial,
+    topScoreSocial,
     loading: dashboardLoading,
     error: dashboardError
   } = useDashboard()
@@ -72,8 +72,42 @@ export function DashboardPage() {
           </div>
 
           <div className="space-y-8">
-            <AlertasPredichas />
-            
+            {/* Bloques blancos solicitados */}
+            <div className="bg-white p-6 rounded-xl border-0">
+              <h3 className="text-lg font-semibold text-gray-900">Alertas predichas de larga estadía</h3>
+              <p className="text-gray-600 mt-2">Próximamente</p>
+            </div>
+
+            <div className="bg-white p-6 rounded-xl border-0">
+              <h3 className="text-lg font-semibold text-gray-900">Score social</h3>
+              {dashboardLoading ? (
+                <p className="text-gray-600 mt-2">Cargando...</p>
+              ) : topScoreSocial.length === 0 ? (
+                <p className="text-gray-600 mt-2">Sin pacientes con score</p>
+              ) : (
+                <div className="mt-4 overflow-x-auto">
+                  <table className="min-w-full text-sm">
+                    <thead>
+                      <tr className="text-left">
+                        <th className="py-2 pr-4 font-medium text-gray-900">Paciente</th>
+                        <th className="py-2 pr-4 font-medium text-gray-900">RUT</th>
+                        <th className="py-2 font-medium text-gray-900">Score</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {topScoreSocial.map((p) => (
+                        <tr key={p.id} className="border-t border-gray-100">
+                          <td className="py-2 pr-4 text-gray-900">{p.nombre}</td>
+                          <td className="py-2 pr-4 text-gray-600">{p.rut}</td>
+                          <td className="py-2 font-semibold text-gray-900">{p.score_social}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
             {/* Tarjetas de métricas */}
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-white p-6 rounded-xl border-0">
