@@ -45,6 +45,7 @@ export interface DashboardData {
   extensionesCriticas: ExtensionCritica[]
   estadisticasGestiones: EstadisticasGestiones | null
   tendenciaEstadia: TendenciaEstadia[]
+  sinScoreSocial: number | null
   loading: boolean
   error: string | null
 }
@@ -60,6 +61,7 @@ export function useDashboard(): DashboardData {
   const [extensionesCriticas, setExtensionesCriticas] = useState<ExtensionCritica[]>([])
   const [estadisticasGestiones, setEstadisticasGestiones] = useState<EstadisticasGestiones | null>(null)
   const [tendenciaEstadia, setTendenciaEstadia] = useState<TendenciaEstadia[]>([])
+  const [sinScoreSocial, setSinScoreSocial] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -70,12 +72,13 @@ export function useDashboard(): DashboardData {
         setError(null)
 
         // Llamadas paralelas a todos los endpoints usando authService
-        const [statsRes, tareasRes, extensionesRes, gestionesStatsRes, tendenciaRes] = await Promise.all([
+        const [statsRes, tareasRes, extensionesRes, gestionesStatsRes, tendenciaRes, scoreRes] = await Promise.all([
           authService.fetchWithAuth(`${API_BASE_URL}/episodios/estadisticas/`),
           authService.fetchWithAuth(`${API_BASE_URL}/gestiones/tareas_pendientes/`),
           authService.fetchWithAuth(`${API_BASE_URL}/episodios/extensiones_criticas/`),
           authService.fetchWithAuth(`${API_BASE_URL}/gestiones/estadisticas/`),
           authService.fetchWithAuth(`${API_BASE_URL}/episodios/tendencia_estadia/`),
+          authService.fetchWithAuth(`${API_BASE_URL}/pacientes/score_social_faltante/`),
         ])
 
         setStats(await statsRes.json() as DashboardStats)
@@ -83,6 +86,8 @@ export function useDashboard(): DashboardData {
         setExtensionesCriticas(await extensionesRes.json() as ExtensionCritica[])
         setEstadisticasGestiones(await gestionesStatsRes.json() as EstadisticasGestiones)
         setTendenciaEstadia(await tendenciaRes.json() as TendenciaEstadia[])
+  const scoreJson = await scoreRes.json() as { sin_score_social: number }
+  setSinScoreSocial(scoreJson?.sin_score_social ?? 0)
       } catch (err) {
         console.error('Error fetching dashboard data:', err)
         setError(err instanceof Error ? err.message : 'Error desconocido')
@@ -100,6 +105,7 @@ export function useDashboard(): DashboardData {
     extensionesCriticas,
     estadisticasGestiones,
     tendenciaEstadia,
+    sinScoreSocial,
     loading,
     error,
   }

@@ -17,6 +17,7 @@ export function DashboardPage() {
     extensionesCriticas,
     estadisticasGestiones,
     tendenciaEstadia,
+    sinScoreSocial,
     loading: dashboardLoading,
     error: dashboardError
   } = useDashboard()
@@ -134,6 +135,22 @@ export function DashboardPage() {
                     <p className="text-sm font-medium text-gray-600">Extensiones Críticas</p>
                     <p className="text-2xl font-bold text-gray-900">
                       {dashboardLoading ? '...' : stats?.extensiones_criticas || 0}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white p-6 rounded-xl border-0">
+                <div className="flex items-center">
+                  <div className="p-3 rounded-xl" style={{ backgroundColor: '#E5E7EB' }}>
+                    <svg className="w-6 h-6" style={{ color: '#374151' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M9 20H4v-2a3 3 0 015.356-1.857M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Pacientes sin score social</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {dashboardLoading ? '...' : (sinScoreSocial ?? 0)}
                     </p>
                   </div>
                 </div>
