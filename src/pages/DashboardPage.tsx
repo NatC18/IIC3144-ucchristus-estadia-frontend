@@ -1,26 +1,13 @@
-import { useEffect, useState } from 'react'
+ 
 import { Header } from '@/components/Header'
 import { TareasPendientes } from '@/components/TareasPendientes'
 import { ExtensionesCriticas } from '@/components/ExtensionesCriticas'
-import { AlertasPredichas } from '@/components/AlertasPredichas'
 import { EstadisticasTareasChart, TiposGestionChart, TendenciaEstadiaChart } from '@/components/Charts'
-import { useApi } from '@/hooks/useApi'
 import { useDashboard } from '@/hooks/useDashboard'
-import { useAuth } from '@/contexts/AuthContext'
-import { Card, CardHeader, CardContent } from '@/components/ui/card'
-
-interface BackendData {
-  status?: string
-  message?: string
-  version?: string
-  [key: string]: unknown
-}
+ 
 
 export function DashboardPage() {
-  const { user } = useAuth()
-  const api = useApi()
-  const [backendData, setBackendData] = useState<BackendData | null>(null)
-  const [healthLoading, setHealthLoading] = useState(true)
+  
   
   // Hook personalizado con todos los datos del dashboard
   const {
@@ -29,25 +16,13 @@ export function DashboardPage() {
     extensionesCriticas,
     estadisticasGestiones,
     tendenciaEstadia,
+    sinScoreSocial,
+    topScoreSocial,
     loading: dashboardLoading,
     error: dashboardError
   } = useDashboard()
   
-  useEffect(() => {
-    const fetchBackendData = async () => {
-      try {
-        const data = await api.publicGet('/health/')
-        setBackendData(data as BackendData)
-      } catch (error) {
-        console.error('Error fetching backend data:', error)
-      } finally {
-        setHealthLoading(false)
-      }
-    }
-    
-    fetchBackendData()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // Empty dependency array - fetch only once on mount
+  
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -59,36 +34,7 @@ export function DashboardPage() {
           <p className="text-gray-600">Gestión centralizada de estadías hospitalarias</p>
         </div>
 
-        {/* Auth0 Connection Status */}
-        <div className="mb-6">
-          <Card className="bg-white border-1 shadow">
-            <CardHeader>
-              <h3 className="text-lg font-semibold text-gray-900">Estado de Conexión</h3>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <h4 className="font-medium text-gray-700 mb-2">Usuario:</h4>
-                  <p className="text-sm text-gray-600">{user?.nombre_completo || 'Cargando...'}</p>
-                  <p className="text-sm text-gray-500">{user?.email || 'Cargando...'}</p>
-                </div>
-                <div>
-                  <h4 className="font-medium text-gray-700 mb-2">Backend:</h4>
-                  {healthLoading ? (
-                    <p className="text-sm text-yellow-600">Conectando...</p>
-                  ) : backendData ? (
-                    <div>
-                      <p className="text-sm text-green-600">✅ Conectado</p>
-                      <p className="text-xs text-gray-500">{backendData.message}</p>
-                    </div>
-                  ) : (
-                    <p className="text-sm text-red-600">❌ Error de conexión</p>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Estado de Conexión removido a solicitud del usuario */}
 
         {/* Error del dashboard */}
         {dashboardError && (
@@ -126,8 +72,42 @@ export function DashboardPage() {
           </div>
 
           <div className="space-y-8">
-            <AlertasPredichas />
-            
+            {/* Bloques blancos solicitados */}
+            <div className="bg-white p-6 rounded-xl border-0">
+              <h3 className="text-lg font-semibold text-gray-900">Alertas predichas de larga estadía</h3>
+              <p className="text-gray-600 mt-2">Próximamente</p>
+            </div>
+
+            <div className="bg-white p-6 rounded-xl border-0">
+              <h3 className="text-lg font-semibold text-gray-900">Score social</h3>
+              {dashboardLoading ? (
+                <p className="text-gray-600 mt-2">Cargando...</p>
+              ) : topScoreSocial.length === 0 ? (
+                <p className="text-gray-600 mt-2">Sin pacientes con score</p>
+              ) : (
+                <div className="mt-4 overflow-x-auto">
+                  <table className="min-w-full text-sm">
+                    <thead>
+                      <tr className="text-left">
+                        <th className="py-2 pr-4 font-medium text-gray-900">Paciente</th>
+                        <th className="py-2 pr-4 font-medium text-gray-900">RUT</th>
+                        <th className="py-2 font-medium text-gray-900">Score</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {topScoreSocial.map((p) => (
+                        <tr key={p.id} className="border-t border-gray-100">
+                          <td className="py-2 pr-4 text-gray-900">{p.nombre}</td>
+                          <td className="py-2 pr-4 text-gray-600">{p.rut}</td>
+                          <td className="py-2 font-semibold text-gray-900">{p.score_social}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
             {/* Tarjetas de métricas */}
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-white p-6 rounded-xl border-0">
@@ -189,6 +169,22 @@ export function DashboardPage() {
                     <p className="text-sm font-medium text-gray-600">Extensiones Críticas</p>
                     <p className="text-2xl font-bold text-gray-900">
                       {dashboardLoading ? '...' : stats?.extensiones_criticas || 0}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white p-6 rounded-xl border-0">
+                <div className="flex items-center">
+                  <div className="p-3 rounded-xl" style={{ backgroundColor: '#E5E7EB' }}>
+                    <svg className="w-6 h-6" style={{ color: '#374151' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M9 20H4v-2a3 3 0 015.356-1.857M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-600">Pacientes sin score social</p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {dashboardLoading ? '...' : (sinScoreSocial ?? 0)}
                     </p>
                   </div>
                 </div>

@@ -1,7 +1,7 @@
 import { Search, User, LogOut } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
 import logoUCChristus from '@/assets/logo-uc-christus.png'
 
@@ -34,21 +34,46 @@ export function Header() {
           
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-6 ml-8">
-            <Link to="/dashboard" className="text-gray-600 transition-colors hover:text-[#671E75]">
+            <NavLink 
+              to="/dashboard" 
+              className={({ isActive }) => 
+                `transition-colors ${isActive ? 'text-[#671E75]' : 'text-gray-600 hover:text-[#671E75]'}`
+              }
+            >
               Dashboard
-            </Link>
-            <Link to="/gestiones" className="text-gray-600 transition-colors hover:text-[#671E75]">
+            </NavLink>
+            <NavLink 
+              to="/gestiones" 
+              className={({ isActive }) => 
+                `transition-colors ${isActive ? 'text-[#671E75]' : 'text-gray-600 hover:text-[#671E75]'}`
+              }
+            >
               Gestiones
-            </Link>
-            <Link to="/pacientes" className="text-gray-600 transition-colors hover:text-[#671E75]">
+            </NavLink>
+            <NavLink 
+              to="/pacientes" 
+              className={({ isActive }) => 
+                `transition-colors ${isActive ? 'text-[#671E75]' : 'text-gray-600 hover:text-[#671E75]'}`
+              }
+            >
               Pacientes
-            </Link>
-            <Link to="/excel-management" className="text-gray-600 transition-colors hover:text-[#671E75]">
+            </NavLink>
+            <NavLink 
+              to="/excel-management" 
+              className={({ isActive }) => 
+                `transition-colors ${isActive ? 'text-[#671E75]' : 'text-gray-600 hover:text-[#671E75]'}`
+              }
+            >
               Excel
-            </Link>
-            <Link to="/episodios" className="text-gray-600 transition-colors hover:text-[#671E75]">
+            </NavLink>
+            <NavLink 
+              to="/episodios" 
+              className={({ isActive }) => 
+                `transition-colors ${isActive ? 'text-[#671E75]' : 'text-gray-600 hover:text-[#671E75]'}`
+              }
+            >
               Episodios
-            </Link>
+            </NavLink>
             <Link to="#" className="text-gray-600 transition-colors hover:text-[#671E75]">
               Alertas
             </Link>

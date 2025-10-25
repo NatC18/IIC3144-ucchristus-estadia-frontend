@@ -24,7 +24,7 @@ export function ExtensionesCriticas({ extensiones, loading }: ExtensionesCritica
   return (
     <Card className="rounded-xl border-0 bg-white">
       <CardHeader>
-        <CardTitle className="text-lg font-semibold">Extensiones críticas</CardTitle>
+        <CardTitle className="text-lg font-semibold">Extensiones críticas actuales</CardTitle>
       </CardHeader>
       <CardContent>
         {loading ? (
