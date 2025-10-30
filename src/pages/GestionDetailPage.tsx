@@ -36,6 +36,21 @@ function getEstadoLabel(estado: string) {
   }
 }
 
+// Get allowed transitions for each estado
+function getAllowedTransitions(currentEstado: Gestion['estado_gestion']): Gestion['estado_gestion'][] {
+  switch (currentEstado) {
+    case 'INICIADA':
+      return ['EN_PROGRESO', 'COMPLETADA', 'CANCELADA']
+    case 'EN_PROGRESO':
+      return ['COMPLETADA', 'CANCELADA']
+    case 'COMPLETADA':
+    case 'CANCELADA':
+      return [] // No transitions allowed
+    default:
+      return []
+  }
+}
+
 export function GestionDetailPage() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -168,39 +183,18 @@ export function GestionDetailPage() {
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-2">Estado Actual</p>
                   {isEditing ? (
-                    <div className="flex gap-2">
-                      <Button
-                        variant={gestion.estado_gestion === 'INICIADA' ? 'default' : 'outline'}
-                        onClick={() => handleEstadoChange('INICIADA')}
-                        disabled={isSaving}
-                        className={gestion.estado_gestion === 'INICIADA' ? 'bg-[#E3AE00] hover:bg-[#E3AE00]/90' : ''}
-                      >
-                        Iniciada
-                      </Button>
-                      <Button
-                        variant={gestion.estado_gestion === 'EN_PROGRESO' ? 'default' : 'outline'}
-                        onClick={() => handleEstadoChange('EN_PROGRESO')}
-                        disabled={isSaving}
-                        className={gestion.estado_gestion === 'EN_PROGRESO' ? 'bg-[#8FA31E] hover:bg-[#8FA31E]/90' : ''}
-                      >
-                        En Progreso
-                      </Button>
-                      <Button
-                        variant={gestion.estado_gestion === 'COMPLETADA' ? 'default' : 'outline'}
-                        onClick={() => handleEstadoChange('COMPLETADA')}
-                        disabled={isSaving}
-                        className={gestion.estado_gestion === 'COMPLETADA' ? 'bg-gray-600 hover:bg-[#d1efcfff]/90' : ''}
-                      >
-                        Completada
-                      </Button>
-                      {/* <Button
-                        variant={gestion.estado_gestion === 'CERRADA' ? 'default' : 'outline'}
-                        onClick={() => handleEstadoChange('CERRADA')}
-                        disabled={isSaving}
-                        className={gestion.estado_gestion === 'CERRADA' ? 'bg-gray-600 hover:bg-gray-600/90' : ''}
-                      >
-                        Cerrada
-                      </Button> */}
+                    <div className="flex gap-2 flex-wrap">
+                      {getAllowedTransitions(gestion.estado_gestion).map((estado) => (
+                        <Button
+                          key={estado}
+                          variant={gestion.estado_gestion === estado ? 'default' : 'outline'}
+                          onClick={() => handleEstadoChange(estado)}
+                          disabled={isSaving}
+                          className={gestion.estado_gestion === estado ? 'bg-[#E3AE00] hover:bg-[#E3AE00]/90' : ''}
+                        >
+                          {getEstadoLabel(estado)}
+                        </Button>
+                      ))}
                     </div>
                   ) : (
                     <Badge variant="outline" className={getEstadoColor(gestion.estado_gestion)}>
@@ -216,8 +210,11 @@ export function GestionDetailPage() {
                       onClick={() => setIsEditing(true)}
                       className="text-white hover:text-white"
                       style={{ backgroundColor: '#671E75' }}
+                      disabled={getAllowedTransitions(gestion.estado_gestion).length === 0}
                     >
-                      Editar Estado
+                      {getAllowedTransitions(gestion.estado_gestion).length === 0 
+                        ? 'Estado Final - No editable' 
+                        : 'Editar Estado'}
                     </Button>
                   ) : (
                     <div className="flex gap-2">
@@ -288,48 +285,62 @@ export function GestionDetailPage() {
                 <CardTitle className="text-lg font-semibold">Información Adicional</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
+                {/* <div>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Fecha de Inicio</p>
+                  <p className="text-sm text-gray-900">
+                    {new Date(gestion.fecha_inicio).toLocaleString('es-CL', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false // Set to false for 24-hour format, or true for 12-hour
+                      })};
+                    {new Date(gestion.fecha_inicio).toLocaleString('es-CL')}
+                  </p>
+                </div> */}
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">Fecha de Inicio</p>
                   <p className="text-sm text-gray-900">
-                    {new Date(gestion.fecha_inicio).toLocaleDateString('es-CL', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
+                    {new Date(gestion.created_at).toLocaleString('es-CL', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false // Set to false for 24-hour format, or true for 12-hour
+                      })};
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Última actualización</p>
+                  <p className="text-sm text-gray-900">
+                    {new Date(gestion.updated_at).toLocaleString('es-CL', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false // Set to false for 24-hour format, or true for 12-hour
+                      })};
+                    
                   </p>
                 </div>
                 {gestion.fecha_fin && (
                   <div>
                     <p className="text-sm font-medium text-gray-600 mb-1">Fecha de Término</p>
                     <p className="text-sm text-gray-900">
-                      {new Date(gestion.fecha_fin).toLocaleDateString('es-CL', {
+                      {new Date(gestion.fecha_fin).toLocaleString('es-CL', {
                         year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false // Set to false for 24-hour format, or true for 12-hour
+                      })};
                     </p>
                   </div>
                 )}
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Creación</p>
-                  <p className="text-sm text-gray-900">
-                    {new Date(gestion.created_at).toLocaleDateString('es-CL', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Última actualización</p>
-                  <p className="text-sm text-gray-900">
-                    {new Date(gestion.updated_at).toLocaleDateString('es-CL', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </p>
-                </div>
                 {gestion.usuario && (
                   <div>
                     <p className="text-sm font-medium text-gray-600 mb-1">Responsable</p>
