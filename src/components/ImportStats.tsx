@@ -84,7 +84,7 @@ export function ImportStats() {
             <div className="flex items-center justify-center gap-3 mb-4">
               <Database className="h-8 w-8 text-red-600" />
               <h3 className="text-lg font-medium text-red-800">
-                Error al obtener estadísticas
+                Error al obtener estadísticas!
               </h3>
             </div>
             <p className="text-sm text-red-700 mb-4">{statusError}</p>
