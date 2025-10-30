@@ -1,29 +1,35 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Header } from '@/components/Header'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Search, Filter } from 'lucide-react'
+import { Search, Filter, Loader2, AlertCircle, RefreshCcw } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { pacientes, type Paciente } from '@/data/mockData'
+import { usePacientes } from '@/hooks/usePacientes'
+import { mapPacienteFromAPI } from '@/utils/pacienteMapper'
+import { getHospitalizacionColor } from '@/lib/transformations'
 
-function getHospitalizacionColor(hospitalizado: Paciente['hospitalizado']) {
-  switch (hospitalizado) {
-    case true:
-      return 'bg-blue-100 text-blue-800 rounded-full whitespace-nowrap'
-    case false:
-      return 'bg-gray-100 text-gray-800 rounded-full whitespace-nowrap'
-    default:
-      return 'bg-gray-100 text-gray-800 rounded-full whitespace-nowrap'
-  }
-}
+
 
 export function PacientesPage() {
   const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
   const [filterHospitalizado, setFilterHospitalizado] = useState<string>('all')
+  
+  // Usar el hook para obtener datos del backend
+  const { 
+    pacientes: pacientesAPI, 
+    loading, 
+    error, 
+    totalCount,
+    fetchPacientes,
+    refetch 
+  } = usePacientes()
+
+  // Convertir datos del backend al formato del frontend
+  const pacientes = pacientesAPI.map(mapPacienteFromAPI)
 
   // Filter patients based on search and filter
   const filteredPacientes = pacientes.filter(paciente => {
@@ -37,6 +43,31 @@ export function PacientesPage() {
     return matchesSearch && matchesFilter
   })
 
+  // Función para refrescar datos
+  const handleRefresh = () => {
+    refetch()
+  }
+
+  // Función para buscar con filtros
+  const handleSearch = useCallback(() => {
+    fetchPacientes({
+      search: searchTerm || undefined,
+    })
+  }, [fetchPacientes, searchTerm])
+
+  // Buscar automáticamente cuando cambie el término de búsqueda
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchTerm) {
+        handleSearch()
+      } else {
+        refetch()
+      }
+    }, 500) // Debounce de 500ms
+
+    return () => clearTimeout(timer)
+  }, [searchTerm, handleSearch, refetch])
+
   return (
     <div className="min-h-screen bg-gray-100">
       <Header />
@@ -46,15 +77,47 @@ export function PacientesPage() {
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Pacientes</h1>
-            <p className="text-gray-600">Historial de pacientes hospitalizados en UC Christus</p>
+            <p className="text-gray-600">
+              Historial de pacientes hospitalizados en UC Christus 
+              {totalCount > 0 && ` (${totalCount} pacientes)`}
+            </p>
           </div>
+          <Button 
+            onClick={handleRefresh} 
+            variant="outline" 
+            disabled={loading}
+            className="flex items-center gap-2"
+          >
+            <RefreshCcw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+            Actualizar
+          </Button>
         </div>
 
+        {/* Error Message */}
+        {error && (
+          <Card className="mb-6 border-red-200 bg-red-50">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-2 text-red-600">
+                <AlertCircle className="h-4 w-4" />
+                <span>Error al cargar pacientes: {error}</span>
+                <Button 
+                  onClick={handleRefresh} 
+                  variant="outline" 
+                  size="sm"
+                  className="ml-auto"
+                >
+                  Reintentar
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Main Content - Tasks Table */}
-        <Card className="rounded-xl border-0">
-          <CardHeader>
+        <div className="bg-white rounded-xl border-0">
+          <div className="p-6 border-b border-gray-100">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-semibold">Todos los pacientes</CardTitle>
+              <h2 className="text-lg font-semibold">Todos los pacientes en UC Christus</h2>
               <div className="flex items-center gap-4">
                 {/* Search */}
                 <div className="relative">
@@ -82,8 +145,8 @@ export function PacientesPage() {
                 </div>
               </div>
             </div>
-          </CardHeader>
-          <CardContent>
+          </div>
+          <div className="p-6">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -96,9 +159,18 @@ export function PacientesPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredPacientes.length > 0 ? (
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8">
+                      <div className="flex items-center justify-center gap-2 text-gray-500">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Cargando pacientes...
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : filteredPacientes.length > 0 ? (
                   filteredPacientes.map((paciente, index) => (
-                    <TableRow key={index}>
+                    <TableRow key={paciente.id || index}>
                       <TableCell className="font-medium">{paciente.nombre}</TableCell>
                       <TableCell>{paciente.rut}</TableCell>
                       <TableCell>{paciente.prevision}</TableCell>
@@ -118,21 +190,23 @@ export function PacientesPage() {
                         >
                           Ver detalles
                         </Button>
-                        
                       </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                      No se encontraron pacientes que coincidan con tu búsqueda
+                      {searchTerm ? 
+                        'No se encontraron pacientes que coincidan con tu búsqueda' :
+                        'No hay pacientes disponibles'
+                      }
                     </TableCell>
                   </TableRow>
                 )}
               </TableBody>
             </Table>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </main>
     </div>
   )

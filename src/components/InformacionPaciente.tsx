@@ -2,23 +2,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { User } from 'lucide-react'
 import type { Paciente } from '@/data/mockData' 
+import { getHospitalizacionColor } from '@/lib/transformations'
 
 // Only use the fields we actually need from Paciente
 type InformacionPacienteProps = Pick<
   Paciente,
   'nombre' | 'rut' | 'edad' | 'sexo' | 'prevision' | 'score' | 'hospitalizado'
 >
-
-function getHospitalizacionColor(hospitalizado: Paciente['hospitalizado']) {
-  switch (hospitalizado) {
-    case true:
-      return 'bg-blue-100 text-blue-800 rounded-full whitespace-nowrap'
-    case false:
-      return 'bg-gray-100 text-gray-800 rounded-full whitespace-nowrap'
-    default:
-      return 'bg-gray-100 text-gray-800 rounded-full whitespace-nowrap'
-  }
-}
 
 export function InformacionPaciente({
   nombre,

@@ -25,4 +25,11 @@ export default tseslint.config(
       ],
     },
   },
+  // Configuración específica para contextos
+  {
+    files: ['**/contexts/**/*.{ts,tsx}'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
 )
