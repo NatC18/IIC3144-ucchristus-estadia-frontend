@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import { useGestiones } from '@/hooks/useGestiones'
+import { useEnfermeros } from '@/hooks/useEnfermeros'
 import { useAuth } from '@/contexts/AuthContext'
 
 
@@ -40,13 +41,14 @@ export function CreateGestionPage() {
   }, [episodioId, navigate])
 
   const { createGestion } = useGestiones()
+  const { enfermeros, loading: loadingEnfermeros } = useEnfermeros()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const [formData, setFormData] = useState({
     episodio: episodioId ?? '',
     tipo_gestion: '',
-    usuario: user?.id ?? '',
+    usuario: '',
     informe: '',
     estado_gestion: 'INICIADA' as 'INICIADA' | 'EN_PROGRESO' | 'COMPLETADA' | 'CANCELADA',
     fecha_inicio: new Date().toISOString().split('T')[0],
@@ -88,7 +90,7 @@ export function CreateGestionPage() {
     try {
       await createGestion({
         ...formData,
-        usuario: user.id // Ensure we're using the latest user ID
+        usuario: formData.usuario || null // Allow null if not selected
       })
       navigate(`/episodios/${episodioId}`)
     } catch (err) {
@@ -183,6 +185,30 @@ export function CreateGestionPage() {
                   onChange={handleChange}
                   className="w-full"
                 />
+              </div>
+
+              {/* Asignar a Enfermero */}
+              <div>
+                <label htmlFor="usuario" className="block text-sm font-medium text-gray-700 mb-2">
+                  Asignar a Enfermero (Opcional)
+                </label>
+                <select
+                  id="usuario"
+                  name="usuario"
+                  value={formData.usuario}
+                  onChange={handleChange}
+                  disabled={loadingEnfermeros}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#671E75] focus:border-transparent"
+                >
+                  <option value="">
+                    {loadingEnfermeros ? 'Cargando enfermeros...' : 'Sin asignar'}
+                  </option>
+                  {enfermeros.map((enfermero) => (
+                    <option key={enfermero.id} value={enfermero.id}>
+                      {enfermero.nombre} {enfermero.apellido}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Action Buttons */}

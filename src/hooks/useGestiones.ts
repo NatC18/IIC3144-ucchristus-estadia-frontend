@@ -14,7 +14,7 @@ export interface Gestion {
   fecha_fin: string | null
   created_at: string
   updated_at: string
-  usuario?: string
+  usuario?: string | null
   usuario_nombre?: string
   paciente_id?: string
   paciente_nombre?: string
@@ -31,7 +31,7 @@ export interface PaginatedResponse<T> {
 // Interfaz para crear/actualizar gestión
 export interface GestionInput {
   episodio: string
-  usuario?: string
+  usuario?: string | null
   tipo_gestion: string
   informe: string
   estado_gestion: 'INICIADA' | 'EN_PROGRESO' | 'COMPLETADA' | 'CANCELADA'

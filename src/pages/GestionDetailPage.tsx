@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react'
 import { Gestion, useGestion, useGestiones } from '@/hooks/useGestiones'
+import { useEnfermeros } from '@/hooks/useEnfermeros'
 
 function getEstadoColor(estado: string) {
   switch (estado) {
@@ -62,7 +63,9 @@ export function GestionDetailPage() {
   const isFromEpisodio = from?.from === 'episodio'
   const sourceEpisodioId = from?.episodioId
   const { updateGestion } = useGestiones()
+  const { enfermeros, loading: loadingEnfermeros } = useEnfermeros()
   const [isEditing, setIsEditing] = useState(false)
+  const [isEditingAsignado, setIsEditingAsignado] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
 
   const handleEstadoChange = async (nuevoEstado: Gestion['estado_gestion']) => {
@@ -75,6 +78,20 @@ export function GestionDetailPage() {
       setIsEditing(false)
     } catch (err) {
       console.error('Error updating estado:', err)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleUsuarioChange = async (nuevoUsuario: string) => {
+    if (!gestion) return
+    setIsSaving(true)
+    try {
+      await updateGestion(gestion.id, { usuario: nuevoUsuario })
+      await refetch()
+      setIsEditingAsignado(false)
+    } catch (err) {
+      console.error('Error updating usuario:', err)
     } finally {
       setIsSaving(false)
     }
@@ -341,12 +358,61 @@ export function GestionDetailPage() {
                     </p>
                   </div>
                 )}
-                {gestion.usuario && (
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">Responsable</p>
-                    <p className="text-sm text-gray-900">{gestion.usuario_nombre}</p>
-                  </div>
-                )}
+                <div>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Responsable</p>
+                  {isEditingAsignado ? (
+                    <div className="space-y-2">
+                      <select
+                        value={gestion.usuario || ''}
+                        onChange={(e) => handleUsuarioChange(e.target.value)}
+                        disabled={isSaving || loadingEnfermeros}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#671E75] focus:border-transparent text-sm"
+                      >
+                        <option value="">
+                          {loadingEnfermeros ? 'Cargando...' : 'Selecciona un enfermero'}
+                        </option>
+                        {enfermeros.map((enfermero) => (
+                          <option key={enfermero.id} value={enfermero.id}>
+                            {enfermero.nombre} {enfermero.apellido}
+                          </option>
+                        ))}
+                      </select>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setIsEditingAsignado(false)}
+                        disabled={isSaving}
+                        className="w-full"
+                      >
+                        Cancelar
+                      </Button>
+                    </div>
+                  ) : gestion.usuario ? (
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-gray-900">{gestion.usuario_nombre}</p>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setIsEditingAsignado(true)}
+                        className="text-[#671E75] hover:bg-purple-50"
+                      >
+                        Cambiar
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-gray-500 italic">Sin asignar</p>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setIsEditingAsignado(true)}
+                        className="text-[#671E75] hover:bg-purple-50"
+                      >
+                        Asignar
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
 
