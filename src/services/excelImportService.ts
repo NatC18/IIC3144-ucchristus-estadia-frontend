@@ -3,7 +3,7 @@
  * Maneja la carga de los 3 archivos Excel requeridos (excel1, excel2, excel3)
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api';
 
 export interface ExcelImportResponse {
   success: boolean;
