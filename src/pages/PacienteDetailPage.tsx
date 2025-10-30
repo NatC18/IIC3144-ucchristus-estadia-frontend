@@ -126,7 +126,7 @@ export function PacienteDetailPage() {
               <Card className="rounded-xl border-0 bg-white">
                 <CardHeader>
                   <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                    Tareas asociadas a episodio {selectedEpisodio.episodio_cmbd}
+                    Tareas asociadas al episodio {selectedEpisodio.episodio_cmbd}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-4">
