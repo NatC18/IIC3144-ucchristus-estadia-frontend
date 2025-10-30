@@ -48,7 +48,7 @@ export function CreateGestionPage() {
     tipo_gestion: '',
     usuario: user?.id ?? '',
     informe: '',
-    estado_gestion: 'INICIADA' as 'INICIADA' | 'EN_PROGRESO' | 'COMPLETADA' | 'CERRADA',
+    estado_gestion: 'INICIADA' as 'INICIADA' | 'EN_PROGRESO' | 'COMPLETADA' | 'CANCELADA',
     fecha_inicio: new Date().toISOString().split('T')[0],
     fecha_fin: null,
   })

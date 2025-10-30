@@ -2,7 +2,7 @@ export interface TareaPendiente {
   episodio: string;
   tipoBarrera: string;
   descripcion: string;
-  estado: 'Abierta' | 'En proceso' | 'Cerrada';
+  estado: 'Abierta' | 'En progreso' | 'Completada' | 'Cancelada';
 }
 
 export interface ExtensionCritica {
@@ -50,7 +50,7 @@ export const tareasPendientes: TareaPendiente[] = [
     episodio: "234797327",
     tipoBarrera: "Administrativa",
     descripcion: "Llamar a médico tratante para autorización",
-    estado: "En proceso"
+    estado: "En progreso"
   },
   {
     episodio: "345678901",
@@ -62,13 +62,13 @@ export const tareasPendientes: TareaPendiente[] = [
     episodio: "456789012",
     tipoBarrera: "Social",
     descripcion: "Coordinar transporte para paciente",
-    estado: "En proceso"
+    estado: "En progreso"
   },
   {
     episodio: "456789012",
     tipoBarrera: "Administrativa",
     descripcion: "Revisar cobertura de seguro médico",
-    estado: "Cerrada"
+    estado: "Completada"
   },
 ];
 
@@ -197,8 +197,9 @@ export const episodios: Episodio[] = [
 // Datos para gráficos
 export const estadisticasTareas = [
   { tipo: "Abierta", cantidad: 15 },
-  { tipo: "En proceso", cantidad: 8 },
-  { tipo: "Cerrada", cantidad: 32 }
+  { tipo: "En progreso", cantidad: 8 },
+  { tipo: "Completada", cantidad: 25 },
+  { tipo: "Cancelada", cantidad: 32 }
 ];
 
 export const estadisticasBarreras = [

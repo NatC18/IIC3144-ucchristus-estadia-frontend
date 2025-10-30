@@ -9,7 +9,7 @@ export interface Gestion {
   episodio_cmbd: string
   tipo_gestion: string
   informe: string
-  estado_gestion: 'INICIADA' | 'EN_PROGRESO' | 'COMPLETADA' | 'CERRADA'
+  estado_gestion: 'INICIADA' | 'EN_PROGRESO' | 'COMPLETADA' | 'CANCELADA'
   fecha_inicio: string
   fecha_fin: string | null
   created_at: string
@@ -34,7 +34,7 @@ export interface GestionInput {
   usuario?: string
   tipo_gestion: string
   informe: string
-  estado_gestion: 'INICIADA' | 'EN_PROGRESO' | 'COMPLETADA' | 'CERRADA'
+  estado_gestion: 'INICIADA' | 'EN_PROGRESO' | 'COMPLETADA' | 'CANCELADA'
   fecha_inicio: string
   fecha_fin?: string | null
 }

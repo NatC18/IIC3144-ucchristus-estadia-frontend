@@ -16,7 +16,7 @@ function getEstadoColor(estado: Gestion['estado_gestion']) {
       return 'bg-[#ECEFCF] text-[#8FA31E] rounded-full whitespace-nowrap'
     case 'COMPLETADA':
       return 'bg-gray-100 text-gray-800 rounded-full whitespace-nowrap'
-    case 'CERRADA':
+    case 'CANCELADA':
       return 'bg-gray-100 text-gray-800 rounded-full whitespace-nowrap'
     default:
       return 'bg-gray-100 text-gray-800 rounded-full whitespace-nowrap'
@@ -53,7 +53,7 @@ export function GestionesPage() {
   const totalGestiones = gestiones.length
   const iniciadas = gestiones.filter(g => g.estado_gestion === 'INICIADA').length
   const enProgreso = gestiones.filter(g => g.estado_gestion === 'EN_PROGRESO').length
-  const cerradas = gestiones.filter(g => g.estado_gestion === 'CERRADA').length
+  const canceladas = gestiones.filter(g => g.estado_gestion === 'CANCELADA').length
   const completadas = gestiones.filter(g => g.estado_gestion === 'COMPLETADA').length
 
 
@@ -163,7 +163,7 @@ export function GestionesPage() {
                 </svg>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">En Proceso</p>
+                <p className="text-sm font-medium text-gray-600">En Progreso</p>
                 <p className="text-2xl font-bold text-gray-900">{enProgreso}</p>
               </div>
             </div>
@@ -191,7 +191,7 @@ export function GestionesPage() {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Canceladas</p>
-                <p className="text-2xl font-bold text-gray-900">{cerradas}</p>
+                <p className="text-2xl font-bold text-gray-900">{canceladas}</p>
               </div>
             </div>
           </div>
@@ -224,9 +224,9 @@ export function GestionesPage() {
                   >
                     <option value="all">Todos los estados</option>
                     <option value="INICIADA">Iniciada</option>
-                    <option value="EN_PROCESO">En proceso</option>
+                    <option value="EN_PROGRESO">En progreso</option>
                     <option value="COMPLETADA">Completada</option>
-                    <option value="CERRADA">Cerrada</option>
+                    <option value="CANCELADA">Cancelada</option>
                   </select>
                 </div>
               </div>

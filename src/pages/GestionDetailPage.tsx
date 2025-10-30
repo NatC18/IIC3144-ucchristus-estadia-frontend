@@ -14,7 +14,7 @@ function getEstadoColor(estado: string) {
     case 'EN_PROGRESO':
       return 'bg-[#ECEFCF] text-[#8FA31E] rounded-full whitespace-nowrap'
     case 'COMPLETADA':
-    case 'CERRADA':
+    case 'CANCELADA':
       return 'bg-gray-100 text-gray-800 rounded-full whitespace-nowrap'
     default:
       return 'bg-gray-100 text-gray-800 rounded-full whitespace-nowrap'
@@ -29,8 +29,8 @@ function getEstadoLabel(estado: string) {
       return 'En Progreso'
     case 'COMPLETADA':
       return 'Completada'
-    case 'CERRADA':
-      return 'Cerrada'
+    case 'CANCELADA':
+      return 'Cancelada'
     default:
       return estado
   }
