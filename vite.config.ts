@@ -15,6 +15,14 @@ export default defineConfig({
       '@': resolve(__dirname, './src'),
     },
   },
+  test: {
+    globals: true, // use global test functions like 'describe', 'it'
+    environment: 'jsdom', // simulate browser environment
+    setupFiles: './src/setupTests.ts', // optional, for global setup
+    coverage: {
+      reporter: ['text', 'html'], // optional, code coverage
+    },
+  },
   server: {
     port: 5174,
   },
