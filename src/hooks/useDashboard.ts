@@ -16,7 +16,7 @@ export interface TareaPendiente {
   episodio: string
   tipo_gestion: string
   descripcion: string
-  estado: 'Abierta' | 'En proceso' | 'Cerrada'
+  estado: 'Abierta' | 'En progreso' | 'Completada' | 'Cancelada'
   fecha_inicio: string
 }
 

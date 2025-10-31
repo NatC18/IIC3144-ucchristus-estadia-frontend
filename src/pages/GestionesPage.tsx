@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Search, Filter, Loader2, AlertCircle, RefreshCcw } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useGestiones, type Gestion } from '@/hooks/useGestiones'
+import { useEnfermeros } from '@/hooks/useEnfermeros'
 
 function getEstadoColor(estado: Gestion['estado_gestion']) {
   switch (estado) {
@@ -16,7 +17,7 @@ function getEstadoColor(estado: Gestion['estado_gestion']) {
       return 'bg-[#ECEFCF] text-[#8FA31E] rounded-full whitespace-nowrap'
     case 'COMPLETADA':
       return 'bg-gray-100 text-gray-800 rounded-full whitespace-nowrap'
-    case 'CERRADA':
+    case 'CANCELADA':
       return 'bg-gray-100 text-gray-800 rounded-full whitespace-nowrap'
     default:
       return 'bg-gray-100 text-gray-800 rounded-full whitespace-nowrap'
@@ -27,6 +28,7 @@ export function GestionesPage() {
   const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
   const [filterEstado, setFilterEstado] = useState<string>('all')
+  const [filterResponsable, setFilterResponsable] = useState<string>('all')
 
   // Usar el hook para obtener datos del backend
   const {
@@ -37,23 +39,31 @@ export function GestionesPage() {
     fetchGestiones,
   } = useGestiones()
 
+  // Fetch enfermeros for the filter dropdown
+  const { enfermeros } = useEnfermeros()
+
   // Filter gestiones based on search and filter
   const filteredGestiones = gestiones.filter(gestion => {
     const matchesSearch = 
-      gestion.episodio.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      gestion.tipo_gestion.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      gestion.informe.toLowerCase().includes(searchTerm.toLowerCase())
+      String(gestion.episodio_cmbd).toLowerCase().includes(searchTerm.toLowerCase()) ||
+      String(gestion.tipo_gestion).toLowerCase().includes(searchTerm.toLowerCase())
     
-    const matchesFilter = filterEstado === 'all' || gestion.estado_gestion === filterEstado
+    const matchesEstadoFilter = filterEstado === 'all' || gestion.estado_gestion === filterEstado
+    
+    const matchesResponsableFilter = filterResponsable === 'all' 
+      ? true 
+      : filterResponsable === 'sin-asignar' 
+      ? !gestion.usuario 
+      : gestion.usuario === filterResponsable
 
-    return matchesSearch && matchesFilter
+    return matchesSearch && matchesEstadoFilter && matchesResponsableFilter
   })
 
   // Statistics
   const totalGestiones = gestiones.length
   const iniciadas = gestiones.filter(g => g.estado_gestion === 'INICIADA').length
   const enProgreso = gestiones.filter(g => g.estado_gestion === 'EN_PROGRESO').length
-  const cerradas = gestiones.filter(g => g.estado_gestion === 'CERRADA').length
+  const canceladas = gestiones.filter(g => g.estado_gestion === 'CANCELADA').length
   const completadas = gestiones.filter(g => g.estado_gestion === 'COMPLETADA').length
 
 
@@ -65,10 +75,10 @@ export function GestionesPage() {
   // Función para buscar con filtros
   const handleSearch = useCallback(() => {
     fetchGestiones({
-      search: searchTerm || undefined,
+      search: undefined,
       estado: filterEstado === 'all' ? undefined : filterEstado,
     })
-  }, [fetchGestiones, searchTerm, filterEstado])
+  }, [fetchGestiones, filterEstado])
 
   // Buscar automáticamente cuando cambien los filtros
   useEffect(() => {
@@ -77,7 +87,7 @@ export function GestionesPage() {
     }, 500) // Debounce de 500ms
 
     return () => clearTimeout(timer)
-  }, [searchTerm, filterEstado, handleSearch])
+  }, [filterEstado, handleSearch])
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -163,7 +173,7 @@ export function GestionesPage() {
                 </svg>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">En Proceso</p>
+                <p className="text-sm font-medium text-gray-600">En Progreso</p>
                 <p className="text-2xl font-bold text-gray-900">{enProgreso}</p>
               </div>
             </div>
@@ -191,7 +201,7 @@ export function GestionesPage() {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Canceladas</p>
-                <p className="text-2xl font-bold text-gray-900">{cerradas}</p>
+                <p className="text-2xl font-bold text-gray-900">{canceladas}</p>
               </div>
             </div>
           </div>
@@ -207,7 +217,7 @@ export function GestionesPage() {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                   <Input 
-                    placeholder="Buscar por episodio, barrera..." 
+                    placeholder="Buscar por episodio, tipo de gestión..." 
                     className="pl-10 w-64"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -215,20 +225,33 @@ export function GestionesPage() {
                 </div>
                 
                 {/* Filter */}
-                <div className="flex items-center gap-2">
-                  <Filter className="h-4 w-4 text-gray-500" />
-                  <select 
-                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#671E75]"
-                    value={filterEstado}
-                    onChange={(e) => setFilterEstado(e.target.value)}
-                  >
-                    <option value="all">Todos los estados</option>
-                    <option value="INICIADA">Iniciada</option>
-                    <option value="EN_PROCESO">En proceso</option>
-                    <option value="COMPLETADA">Completada</option>
-                    <option value="CERRADA">Cerrada</option>
-                  </select>
-                </div>
+              <div className="flex items-center gap-2">
+                <Filter className="h-4 w-4 text-gray-500" />
+                <select 
+                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#671E75]"
+                  value={filterEstado}
+                  onChange={(e) => setFilterEstado(e.target.value)}
+                >
+                  <option value="all">Todos los estados</option>
+                  <option value="INICIADA">Iniciada</option>
+                  <option value="EN_PROGRESO">En progreso</option>
+                  <option value="COMPLETADA">Completada</option>
+                  <option value="CANCELADA">Cancelada</option>
+                </select>
+                <select 
+                  className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#671E75]"
+                  value={filterResponsable}
+                  onChange={(e) => setFilterResponsable(e.target.value)}
+                >
+                  <option value="all">Todos los responsables</option>
+                  <option value="sin-asignar">Sin asignar</option>
+                  {enfermeros.map((enfermero) => (
+                    <option key={enfermero.id} value={enfermero.id}>
+                      {enfermero.nombre} {enfermero.apellido}
+                    </option>
+                  ))}
+                </select>
+              </div>
               </div>
             </div>
           </div>
@@ -238,6 +261,7 @@ export function GestionesPage() {
                 <TableRow>
                   <TableHead>Episodio</TableHead>
                   <TableHead>Tipo de Gestión</TableHead>
+                  <TableHead>Responsable</TableHead>
                   <TableHead>Estado</TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
@@ -255,8 +279,19 @@ export function GestionesPage() {
                 ) : filteredGestiones.length > 0 ? (
                   filteredGestiones.map((gestion) => (
                     <TableRow key={gestion.id}>
+                      {/* <TableCell className="font-medium">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className="text-[#671E75] hover:bg-purple-50 p-0 h-auto"
+                          onClick={() => navigate(`/episodios/${gestion.episodio}`)}
+                        >
+                          {gestion.episodio_cmbd}
+                        </Button>
+                      </TableCell> */}
                       <TableCell className="font-medium">{gestion.episodio_cmbd}</TableCell>
                       <TableCell>{gestion.tipo_gestion}</TableCell>
+                      <TableCell>{gestion.usuario_nombre || 'Sin asignar'}</TableCell>
                       <TableCell>
                         <Badge 
                           variant="outline" 

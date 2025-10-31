@@ -5,8 +5,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ArrowLeft, Loader2 } from 'lucide-react'
+import { SearchableSelect } from '@/components/SearchableSelect'
 import { useGestiones } from '@/hooks/useGestiones'
+import { useEnfermeros } from '@/hooks/useEnfermeros'
 import { useAuth } from '@/contexts/AuthContext'
+import { 
+  centrosDestino, 
+  motivosTraslado, 
+  tiposSolicitud, 
+  nivelesAtencion, 
+  estadosTransfer,
+  diagnostico_transfers 
+} from '@/data/destinos'
 
 
 
@@ -40,17 +50,27 @@ export function CreateGestionPage() {
   }, [episodioId, navigate])
 
   const { createGestion } = useGestiones()
+  const { enfermeros, loading: loadingEnfermeros } = useEnfermeros()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const [formData, setFormData] = useState({
     episodio: episodioId ?? '',
     tipo_gestion: '',
-    usuario: user?.id ?? '',
+    usuario: '',
     informe: '',
-    estado_gestion: 'INICIADA' as 'INICIADA' | 'EN_PROGRESO' | 'COMPLETADA' | 'CERRADA',
+    estado_gestion: 'INICIADA' as 'INICIADA' | 'EN_PROGRESO' | 'COMPLETADA' | 'CANCELADA',
     fecha_inicio: new Date().toISOString().split('T')[0],
     fecha_fin: null,
+    // Traslado fields
+    centro_destinatario: '',
+    motivo_traslado: '',
+    tipo_solicitud: '',
+    nivel_atencion: '',
+    diagnostico_transfer: '',
+    estado_transfer: '',
+    fecha_hora_inicio_traslado: '',
+    fecha_hora_finalizacion_traslado: '',
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -85,10 +105,20 @@ export function CreateGestionPage() {
       return
     }
 
+    // Validate Traslado specific fields if tipo_gestion is TRASLADO
+    if (formData.tipo_gestion === 'TRASLADO') {
+      if (!formData.centro_destinatario || !formData.motivo_traslado || !formData.tipo_solicitud || 
+          !formData.nivel_atencion || !formData.diagnostico_transfer || !formData.estado_transfer) {
+        setError('Por favor complete todos los campos requeridos para el traslado')
+        setIsSubmitting(false)
+        return
+      }
+    }
+
     try {
       await createGestion({
         ...formData,
-        usuario: user.id // Ensure we're using the latest user ID
+        usuario: formData.usuario || null // Allow null if not selected
       })
       navigate(`/episodios/${episodioId}`)
     } catch (err) {
@@ -183,6 +213,175 @@ export function CreateGestionPage() {
                   onChange={handleChange}
                   className="w-full"
                 />
+              </div>
+
+              {/* Conditional Traslado Fields */}
+              {formData.tipo_gestion === 'TRASLADO' && (
+                <div className="border-t pt-6">
+                  <h3 className="text-base font-semibold text-gray-900 mb-4">Información de Traslado</h3>
+                  
+                  {/* Centro de Destinatario */}
+                  <div className="mb-4">
+                    <SearchableSelect
+                      label="Centro de Destinatario"
+                      options={centrosDestino}
+                      value={formData.centro_destinatario}
+                      onChange={(value) => setFormData({ ...formData, centro_destinatario: value })}
+                      placeholder="Busca un centro..."
+                      required
+                    />
+                  </div>
+
+                  {/* Motivo de Traslado */}
+                  <div className="mb-4">
+                    <label htmlFor="motivo_traslado" className="block text-sm font-medium text-gray-700 mb-2">
+                      Motivo de Traslado <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      id="motivo_traslado"
+                      name="motivo_traslado"
+                      value={formData.motivo_traslado}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#671E75] focus:border-transparent"
+                    >
+                      <option value="">Selecciona un motivo</option>
+                      {motivosTraslado.map((motivo) => (
+                        <option key={motivo} value={motivo}>
+                          {motivo}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Tipo de Solicitud */}
+                  <div className="mb-4">
+                    <label htmlFor="tipo_solicitud" className="block text-sm font-medium text-gray-700 mb-2">
+                      Tipo de Solicitud <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      id="tipo_solicitud"
+                      name="tipo_solicitud"
+                      value={formData.tipo_solicitud}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#671E75] focus:border-transparent"
+                    >
+                      <option value="">Selecciona un tipo</option>
+                      {tiposSolicitud.map((tipo) => (
+                        <option key={tipo} value={tipo}>
+                          {tipo}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Nivel de Atención */}
+                  <div className="mb-4">
+                    <label htmlFor="nivel_atencion" className="block text-sm font-medium text-gray-700 mb-2">
+                      Nivel de Atención <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      id="nivel_atencion"
+                      name="nivel_atencion"
+                      value={formData.nivel_atencion}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#671E75] focus:border-transparent"
+                    >
+                      <option value="">Selecciona un nivel</option>
+                      {nivelesAtencion.map((nivel) => (
+                        <option key={nivel} value={nivel}>
+                          {nivel}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Diagnóstico Transfer */}
+                  <div className="mb-4">
+                    <SearchableSelect
+                      label="Diagnóstico Transfer"
+                      options={diagnostico_transfers}
+                      value={formData.diagnostico_transfer}
+                      onChange={(value) => setFormData({ ...formData, diagnostico_transfer: value })}
+                      placeholder="Busca un diagnóstico..."
+                      required
+                    />
+                  </div>
+
+                  {/* Estado Transfer */}
+                  <div className="mb-4">
+                    <label htmlFor="estado_transfer" className="block text-sm font-medium text-gray-700 mb-2">
+                      Estado Transfer <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      id="estado_transfer"
+                      name="estado_transfer"
+                      value={formData.estado_transfer}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#671E75] focus:border-transparent"
+                    >
+                      <option value="">Selecciona un estado</option>
+                      {estadosTransfer.map((estado) => (
+                        <option key={estado} value={estado}>
+                          {estado}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Fecha/Hora Inicio Traslado */}
+                  <div className="mb-4">
+                    <label htmlFor="fecha_hora_inicio_traslado" className="block text-sm font-medium text-gray-700 mb-2">
+                      Fecha/Hora Inicio Traslado
+                    </label>
+                    <Input
+                      type="datetime-local"
+                      id="fecha_hora_inicio_traslado"
+                      name="fecha_hora_inicio_traslado"
+                      value={formData.fecha_hora_inicio_traslado}
+                      onChange={handleChange}
+                      className="w-full"
+                    />
+                  </div>
+
+                  {/* Fecha/Hora Finalización Traslado */}
+                  <div className="mb-4">
+                    <label htmlFor="fecha_hora_finalizacion_traslado" className="block text-sm font-medium text-gray-700 mb-2">
+                      Fecha/Hora Finalización Traslado
+                    </label>
+                    <Input
+                      type="datetime-local"
+                      id="fecha_hora_finalizacion_traslado"
+                      name="fecha_hora_finalizacion_traslado"
+                      value={formData.fecha_hora_finalizacion_traslado}
+                      onChange={handleChange}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Asignar a Enfermero */}
+              <div>
+                <label htmlFor="usuario" className="block text-sm font-medium text-gray-700 mb-2">
+                  Asignar a Enfermero (Opcional)
+                </label>
+                <select
+                  id="usuario"
+                  name="usuario"
+                  value={formData.usuario}
+                  onChange={handleChange}
+                  disabled={loadingEnfermeros}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#671E75] focus:border-transparent"
+                >
+                  <option value="">
+                    {loadingEnfermeros ? 'Cargando enfermeros...' : 'Sin asignar'}
+                  </option>
+                  {enfermeros.map((enfermero) => (
+                    <option key={enfermero.id} value={enfermero.id}>
+                      {enfermero.nombre} {enfermero.apellido}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Action Buttons */}

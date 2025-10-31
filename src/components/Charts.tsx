@@ -31,8 +31,8 @@ interface TendenciaEstadiaChartProps {
 // Mapeo de estados a labels más amigables
 const estadoLabels: Record<string, string> = {
   'INICIADA': 'Abierta',
-  'EN_PROGRESO': 'En proceso',
-  'COMPLETADA': 'Cerrada',
+  'EN_PROGRESO': 'En progreso',
+  'COMPLETADA': 'Completada',
   'CANCELADA': 'Cancelada',
 }
 

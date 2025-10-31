@@ -153,7 +153,7 @@ export function PacienteDetailPage() {
                             <TableCell>{g.informe}</TableCell>
                             <TableCell>
                               <Badge className={getEstadoGestionColor(g.estado_gestion)}>
-                                {g.estado_gestion === 'COMPLETADA' ? 'Cerrada' : g.estado_gestion === 'EN_PROGRESO' ? 'En progreso' : 'Abierta'}
+                                {g.estado_gestion === 'COMPLETADA' ? 'Completada' : g.estado_gestion === 'EN_PROGRESO' ? 'En progreso' : 'Abierta'}
                               </Badge>
                             </TableCell>
                           </TableRow>

@@ -113,7 +113,14 @@ export function EpisodioDetailPage() {
                   <div>
                     <p className="text-sm font-medium text-gray-600 mb-1">Fecha de Ingreso</p>
                     <p className="text-base text-gray-900">
-                      {new Date(episodio.fecha_ingreso).toLocaleString('es-CL')}
+                      {new Date(episodio.fecha_ingreso).toLocaleString('es-CL', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false 
+                      })};
                     </p>
                   </div>
                   <div>
@@ -253,7 +260,14 @@ export function EpisodioDetailPage() {
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">Última Actualización</p>
                   <p className="text-sm text-gray-900">
-                    {new Date(episodio.updated_at).toLocaleString('es-CL')}
+                    {new Date(episodio.updated_at).toLocaleString('es-CL', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false 
+                      })};
                   </p>
                 </div>
               </CardContent>
