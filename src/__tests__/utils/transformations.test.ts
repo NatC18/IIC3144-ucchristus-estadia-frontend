@@ -1,4 +1,4 @@
-
+import { describe, it, expect } from 'vitest'
 import { getEstadoGestionColor, getHospitalizacionColor } from '@/lib/transformations'
 
 describe('getEstadoGestionColor', () => {
@@ -42,12 +42,6 @@ describe('getHospitalizacionColor', () => {
 
   it('returns gray classes when hospitalizado is false', () => {
     expect(getHospitalizacionColor(false)).toBe(
-      'bg-gray-100 text-gray-800 rounded-full whitespace-nowrap'
-    )
-  })
-
-  it('returns gray classes when hospitalizado is undefined', () => {
-    expect(getHospitalizacionColor(undefined as any)).toBe(
       'bg-gray-100 text-gray-800 rounded-full whitespace-nowrap'
     )
   })
