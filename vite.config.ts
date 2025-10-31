@@ -16,11 +16,11 @@ export default defineConfig({
     },
   },
   test: {
-    globals: true, // use global test functions like 'describe', 'it'
-    environment: 'jsdom', // simulate browser environment
-    setupFiles: './src/setupTests.ts', // optional, for global setup
+    globals: true, 
+    environment: 'jsdom', 
+    setupFiles: './src/setupTests.ts', 
     coverage: {
-      reporter: ['text', 'html'], // optional, code coverage
+      reporter: ['text', 'html'], 
     },
   },
   server: {

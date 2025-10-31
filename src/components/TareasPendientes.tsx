@@ -16,7 +16,7 @@ interface TareasPendientesProps {
   loading?: boolean
 }
 
-function getEstadoColor(estado: TareaPendiente['estado']) {
+export function getEstadoColor(estado: TareaPendiente['estado']) {
   switch (estado) {
     case 'Abierta':
       return 'bg-[#FBF2CC] text-[#E3AE00] rounded-full whitespace-nowrap'
