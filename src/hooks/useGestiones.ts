@@ -9,15 +9,24 @@ export interface Gestion {
   episodio_cmbd: string
   tipo_gestion: string
   informe: string
-  estado_gestion: 'INICIADA' | 'EN_PROGRESO' | 'COMPLETADA' | 'CERRADA'
+  estado_gestion: 'INICIADA' | 'EN_PROGRESO' | 'COMPLETADA' | 'CANCELADA'
   fecha_inicio: string
   fecha_fin: string | null
   created_at: string
   updated_at: string
-  usuario?: string
+  usuario?: string | null
   usuario_nombre?: string
   paciente_id?: string
   paciente_nombre?: string
+  // Traslado fields
+  centro_destinatario?: string | null
+  motivo_traslado?: string | null
+  tipo_solicitud?: string | null
+  nivel_atencion?: string | null
+  diagnostico_transfer?: string | null
+  estado_transfer?: string | null
+  fecha_hora_inicio_traslado?: string | null
+  fecha_hora_finalizacion_traslado?: string | null
 }
 
 // Interfaz para la respuesta paginada
@@ -31,12 +40,21 @@ export interface PaginatedResponse<T> {
 // Interfaz para crear/actualizar gestión
 export interface GestionInput {
   episodio: string
-  usuario?: string
+  usuario?: string | null
   tipo_gestion: string
   informe: string
-  estado_gestion: 'INICIADA' | 'EN_PROGRESO' | 'COMPLETADA' | 'CERRADA'
+  estado_gestion: 'INICIADA' | 'EN_PROGRESO' | 'COMPLETADA' | 'CANCELADA'
   fecha_inicio: string
   fecha_fin?: string | null
+  // Traslado fields
+  centro_destinatario?: string | null
+  motivo_traslado?: string | null
+  tipo_solicitud?: string | null
+  nivel_atencion?: string | null
+  diagnostico_transfer?: string | null
+  estado_transfer?: string | null
+  fecha_hora_inicio_traslado?: string | null
+  fecha_hora_finalizacion_traslado?: string | null
 }
 
 export function useGestiones(episodioId?: string) {

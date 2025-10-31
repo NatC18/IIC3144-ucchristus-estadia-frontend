@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react'
 import { Gestion, useGestion, useGestiones } from '@/hooks/useGestiones'
+import { useEnfermeros } from '@/hooks/useEnfermeros'
 
 function getEstadoColor(estado: string) {
   switch (estado) {
@@ -14,7 +15,7 @@ function getEstadoColor(estado: string) {
     case 'EN_PROGRESO':
       return 'bg-[#ECEFCF] text-[#8FA31E] rounded-full whitespace-nowrap'
     case 'COMPLETADA':
-    case 'CERRADA':
+    case 'CANCELADA':
       return 'bg-gray-100 text-gray-800 rounded-full whitespace-nowrap'
     default:
       return 'bg-gray-100 text-gray-800 rounded-full whitespace-nowrap'
@@ -29,10 +30,25 @@ function getEstadoLabel(estado: string) {
       return 'En Progreso'
     case 'COMPLETADA':
       return 'Completada'
-    case 'CERRADA':
-      return 'Cerrada'
+    case 'CANCELADA':
+      return 'Cancelada'
     default:
       return estado
+  }
+}
+
+// Get allowed transitions for each estado
+function getAllowedTransitions(currentEstado: Gestion['estado_gestion']): Gestion['estado_gestion'][] {
+  switch (currentEstado) {
+    case 'INICIADA':
+      return ['EN_PROGRESO', 'COMPLETADA', 'CANCELADA']
+    case 'EN_PROGRESO':
+      return ['COMPLETADA', 'CANCELADA']
+    case 'COMPLETADA':
+    case 'CANCELADA':
+      return [] // No transitions allowed
+    default:
+      return []
   }
 }
 
@@ -47,7 +63,9 @@ export function GestionDetailPage() {
   const isFromEpisodio = from?.from === 'episodio'
   const sourceEpisodioId = from?.episodioId
   const { updateGestion } = useGestiones()
+  const { enfermeros, loading: loadingEnfermeros } = useEnfermeros()
   const [isEditing, setIsEditing] = useState(false)
+  const [isEditingAsignado, setIsEditingAsignado] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
 
   const handleEstadoChange = async (nuevoEstado: Gestion['estado_gestion']) => {
@@ -60,6 +78,20 @@ export function GestionDetailPage() {
       setIsEditing(false)
     } catch (err) {
       console.error('Error updating estado:', err)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const handleUsuarioChange = async (nuevoUsuario: string) => {
+    if (!gestion) return
+    setIsSaving(true)
+    try {
+      await updateGestion(gestion.id, { usuario: nuevoUsuario })
+      await refetch()
+      setIsEditingAsignado(false)
+    } catch (err) {
+      console.error('Error updating usuario:', err)
     } finally {
       setIsSaving(false)
     }
@@ -168,39 +200,18 @@ export function GestionDetailPage() {
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-2">Estado Actual</p>
                   {isEditing ? (
-                    <div className="flex gap-2">
-                      <Button
-                        variant={gestion.estado_gestion === 'INICIADA' ? 'default' : 'outline'}
-                        onClick={() => handleEstadoChange('INICIADA')}
-                        disabled={isSaving}
-                        className={gestion.estado_gestion === 'INICIADA' ? 'bg-[#E3AE00] hover:bg-[#E3AE00]/90' : ''}
-                      >
-                        Iniciada
-                      </Button>
-                      <Button
-                        variant={gestion.estado_gestion === 'EN_PROGRESO' ? 'default' : 'outline'}
-                        onClick={() => handleEstadoChange('EN_PROGRESO')}
-                        disabled={isSaving}
-                        className={gestion.estado_gestion === 'EN_PROGRESO' ? 'bg-[#8FA31E] hover:bg-[#8FA31E]/90' : ''}
-                      >
-                        En Progreso
-                      </Button>
-                      <Button
-                        variant={gestion.estado_gestion === 'COMPLETADA' ? 'default' : 'outline'}
-                        onClick={() => handleEstadoChange('COMPLETADA')}
-                        disabled={isSaving}
-                        className={gestion.estado_gestion === 'COMPLETADA' ? 'bg-gray-600 hover:bg-[#d1efcfff]/90' : ''}
-                      >
-                        Completada
-                      </Button>
-                      {/* <Button
-                        variant={gestion.estado_gestion === 'CERRADA' ? 'default' : 'outline'}
-                        onClick={() => handleEstadoChange('CERRADA')}
-                        disabled={isSaving}
-                        className={gestion.estado_gestion === 'CERRADA' ? 'bg-gray-600 hover:bg-gray-600/90' : ''}
-                      >
-                        Cerrada
-                      </Button> */}
+                    <div className="flex gap-2 flex-wrap">
+                      {getAllowedTransitions(gestion.estado_gestion).map((estado) => (
+                        <Button
+                          key={estado}
+                          variant={gestion.estado_gestion === estado ? 'default' : 'outline'}
+                          onClick={() => handleEstadoChange(estado)}
+                          disabled={isSaving}
+                          className={gestion.estado_gestion === estado ? 'bg-[#E3AE00] hover:bg-[#E3AE00]/90' : ''}
+                        >
+                          {getEstadoLabel(estado)}
+                        </Button>
+                      ))}
                     </div>
                   ) : (
                     <Badge variant="outline" className={getEstadoColor(gestion.estado_gestion)}>
@@ -216,8 +227,11 @@ export function GestionDetailPage() {
                       onClick={() => setIsEditing(true)}
                       className="text-white hover:text-white"
                       style={{ backgroundColor: '#671E75' }}
+                      disabled={getAllowedTransitions(gestion.estado_gestion).length === 0}
                     >
-                      Editar Estado
+                      {getAllowedTransitions(gestion.estado_gestion).length === 0 
+                        ? 'Estado Final - No editable' 
+                        : 'Editar Estado'}
                     </Button>
                   ) : (
                     <div className="flex gap-2">
@@ -288,56 +302,129 @@ export function GestionDetailPage() {
                 <CardTitle className="text-lg font-semibold">Información Adicional</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
+                {/* <div>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Fecha de Inicio</p>
+                  <p className="text-sm text-gray-900">
+                    {new Date(gestion.fecha_inicio).toLocaleString('es-CL', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false // Set to false for 24-hour format, or true for 12-hour
+                      })};
+                    {new Date(gestion.fecha_inicio).toLocaleString('es-CL')}
+                  </p>
+                </div> */}
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">Fecha de Inicio</p>
                   <p className="text-sm text-gray-900">
-                    {new Date(gestion.fecha_inicio).toLocaleDateString('es-CL', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
+                    {new Date(gestion.created_at).toLocaleString('es-CL', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false // Set to false for 24-hour format, or true for 12-hour
+                      })};
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Última actualización</p>
+                  <p className="text-sm text-gray-900">
+                    {new Date(gestion.updated_at).toLocaleString('es-CL', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false // Set to false for 24-hour format, or true for 12-hour
+                      })};
+                    
                   </p>
                 </div>
                 {gestion.fecha_fin && (
                   <div>
                     <p className="text-sm font-medium text-gray-600 mb-1">Fecha de Término</p>
                     <p className="text-sm text-gray-900">
-                      {new Date(gestion.fecha_fin).toLocaleDateString('es-CL', {
+                      {new Date(gestion.fecha_fin).toLocaleString('es-CL', {
                         year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false // Set to false for 24-hour format, or true for 12-hour
+                      })};
                     </p>
                   </div>
                 )}
                 <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Creación</p>
-                  <p className="text-sm text-gray-900">
-                    {new Date(gestion.created_at).toLocaleDateString('es-CL', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </p>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Responsable</p>
+                  {isEditingAsignado ? (
+                    <div className="space-y-2">
+                      <select
+                        value={gestion.usuario || ''}
+                        onChange={(e) => handleUsuarioChange(e.target.value)}
+                        disabled={isSaving || loadingEnfermeros}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#671E75] focus:border-transparent text-sm"
+                      >
+                        <option value="">
+                          {loadingEnfermeros ? 'Cargando...' : 'Selecciona un enfermero'}
+                        </option>
+                        {enfermeros.map((enfermero) => (
+                          <option key={enfermero.id} value={enfermero.id}>
+                            {enfermero.nombre} {enfermero.apellido}
+                          </option>
+                        ))}
+                      </select>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setIsEditingAsignado(false)}
+                        disabled={isSaving}
+                        className="w-full"
+                      >
+                        Cancelar
+                      </Button>
+                    </div>
+                  ) : gestion.usuario ? (
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-gray-900">{gestion.usuario_nombre}</p>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setIsEditingAsignado(true)}
+                        className="text-[#671E75] hover:bg-purple-50"
+                      >
+                        Cambiar
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-gray-500 italic">Sin asignar</p>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setIsEditingAsignado(true)}
+                        className="text-[#671E75] hover:bg-purple-50"
+                      >
+                        Asignar
+                      </Button>
+                    </div>
+                  )}
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Última actualización</p>
-                  <p className="text-sm text-gray-900">
-                    {new Date(gestion.updated_at).toLocaleDateString('es-CL', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </p>
-                </div>
-                {gestion.usuario && (
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">Responsable</p>
-                    <p className="text-sm text-gray-900">{gestion.usuario_nombre}</p>
-                  </div>
-                )}
               </CardContent>
             </Card>
+
+            {/* Botón ir a episodio */}
+            <Button
+              onClick={() => navigate(`/episodios/${gestion.episodio}`)}
+              className="w-full flex items-center gap-2 text-white hover:text-white"
+              style={{ backgroundColor: '#671E75' }}
+            >
+              <ArrowLeft className="h-4 w-4 rotate-180" />
+              Ir al Episodio
+            </Button>
 
             {/* Acciones Rápidas */}
             <Card className="rounded-xl border-0 bg-blue-50">

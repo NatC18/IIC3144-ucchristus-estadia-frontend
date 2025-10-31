@@ -7,7 +7,7 @@ export interface TareaPendiente {
   episodio: string
   tipo_gestion: string
   descripcion: string
-  estado: 'Abierta' | 'En proceso' | 'Cerrada'
+  estado: 'Abierta' | 'En progreso' | 'Completada' | 'Cancelada'
   fecha_inicio: string
 }
 
@@ -20,9 +20,11 @@ function getEstadoColor(estado: TareaPendiente['estado']) {
   switch (estado) {
     case 'Abierta':
       return 'bg-[#FBF2CC] text-[#E3AE00] rounded-full whitespace-nowrap'
-    case 'En proceso':
+    case 'En progreso':
       return 'bg-[#ECEFCF] text-[#8FA31E] rounded-full whitespace-nowrap'
-    case 'Cerrada':
+    case 'Completada':
+      return 'bg-gray-100 text-gray-800 rounded-full whitespace-nowrap'
+    case 'Cancelada':
       return 'bg-gray-100 text-gray-800 rounded-full whitespace-nowrap'
     default:
       return 'bg-gray-100 text-gray-800 rounded-full whitespace-nowrap'
