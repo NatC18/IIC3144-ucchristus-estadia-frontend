@@ -18,6 +18,15 @@ export interface Gestion {
   usuario_nombre?: string
   paciente_id?: string
   paciente_nombre?: string
+  // Traslado fields
+  centro_destinatario?: string | null
+  motivo_traslado?: string | null
+  tipo_solicitud?: string | null
+  nivel_atencion?: string | null
+  diagnostico_transfer?: string | null
+  estado_transfer?: string | null
+  fecha_hora_inicio_traslado?: string | null
+  fecha_hora_finalizacion_traslado?: string | null
 }
 
 // Interfaz para la respuesta paginada
@@ -37,6 +46,15 @@ export interface GestionInput {
   estado_gestion: 'INICIADA' | 'EN_PROGRESO' | 'COMPLETADA' | 'CANCELADA'
   fecha_inicio: string
   fecha_fin?: string | null
+  // Traslado fields
+  centro_destinatario?: string | null
+  motivo_traslado?: string | null
+  tipo_solicitud?: string | null
+  nivel_atencion?: string | null
+  diagnostico_transfer?: string | null
+  estado_transfer?: string | null
+  fecha_hora_inicio_traslado?: string | null
+  fecha_hora_finalizacion_traslado?: string | null
 }
 
 export function useGestiones(episodioId?: string) {

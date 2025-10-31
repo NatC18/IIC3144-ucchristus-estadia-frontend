@@ -416,6 +416,16 @@ export function GestionDetailPage() {
               </CardContent>
             </Card>
 
+            {/* Botón ir a episodio */}
+            <Button
+              onClick={() => navigate(`/episodios/${gestion.episodio}`)}
+              className="w-full flex items-center gap-2 text-white hover:text-white"
+              style={{ backgroundColor: '#671E75' }}
+            >
+              <ArrowLeft className="h-4 w-4 rotate-180" />
+              Ir al Episodio
+            </Button>
+
             {/* Acciones Rápidas */}
             <Card className="rounded-xl border-0 bg-blue-50">
               <CardContent className="pt-6">

@@ -279,6 +279,16 @@ export function GestionesPage() {
                 ) : filteredGestiones.length > 0 ? (
                   filteredGestiones.map((gestion) => (
                     <TableRow key={gestion.id}>
+                      {/* <TableCell className="font-medium">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          className="text-[#671E75] hover:bg-purple-50 p-0 h-auto"
+                          onClick={() => navigate(`/episodios/${gestion.episodio}`)}
+                        >
+                          {gestion.episodio_cmbd}
+                        </Button>
+                      </TableCell> */}
                       <TableCell className="font-medium">{gestion.episodio_cmbd}</TableCell>
                       <TableCell>{gestion.tipo_gestion}</TableCell>
                       <TableCell>{gestion.usuario_nombre || 'Sin asignar'}</TableCell>
