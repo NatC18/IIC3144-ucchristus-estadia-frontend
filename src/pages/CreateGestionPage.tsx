@@ -15,7 +15,11 @@ import {
   tiposSolicitud, 
   nivelesAtencion, 
   estadosTransfer,
-  diagnostico_transfers 
+  tipo_traslado,
+  estadoTrasladoMap,
+  tipoTrasladoMap,
+  tipoSolicitudMap,
+  nivelAtencionMap,
 } from '@/data/destinos'
 
 
@@ -60,17 +64,17 @@ export function CreateGestionPage() {
     usuario: '',
     informe: '',
     estado_gestion: 'INICIADA' as 'INICIADA' | 'EN_PROGRESO' | 'COMPLETADA' | 'CANCELADA',
-    fecha_inicio: new Date().toISOString().split('T')[0],
+    fecha_inicio: new Date().toISOString(),
     fecha_fin: null,
     // Traslado fields
-    centro_destinatario: '',
+    estado_traslado: '',
+    tipo_traslado: '',
     motivo_traslado: '',
-    tipo_solicitud: '',
-    nivel_atencion: '',
-    diagnostico_transfer: '',
-    estado_transfer: '',
-    fecha_hora_inicio_traslado: '',
-    fecha_hora_finalizacion_traslado: '',
+    centro_destinatario: '',
+    tipo_solicitud_traslado: '',
+    nivel_atencion_traslado: '',
+    motivo_rechazo_traslado: '',
+    motivo_cancelacion_traslado: '',
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -107,8 +111,9 @@ export function CreateGestionPage() {
 
     // Validate Traslado specific fields if tipo_gestion is TRASLADO
     if (formData.tipo_gestion === 'TRASLADO') {
-      if (!formData.centro_destinatario || !formData.motivo_traslado || !formData.tipo_solicitud || 
-          !formData.nivel_atencion || !formData.diagnostico_transfer || !formData.estado_transfer) {
+      if (!formData.estado_traslado || !formData.tipo_traslado || !formData.motivo_traslado || 
+          !formData.centro_destinatario || !formData.tipo_solicitud_traslado || 
+          !formData.nivel_atencion_traslado) {
         setError('Por favor complete todos los campos requeridos para el traslado')
         setIsSubmitting(false)
         return
@@ -116,10 +121,17 @@ export function CreateGestionPage() {
     }
 
     try {
-      await createGestion({
+      const payload = {
         ...formData,
-        usuario: formData.usuario || null // Allow null if not selected
-      })
+        usuario: formData.usuario || null, // Allow null if not selected
+        // Convert display values to backend keys for traslado fields
+        estado_traslado: formData.estado_traslado ? estadoTrasladoMap[formData.estado_traslado] || formData.estado_traslado : '',
+        tipo_traslado: formData.tipo_traslado ? tipoTrasladoMap[formData.tipo_traslado] || formData.tipo_traslado : '',
+        tipo_solicitud_traslado: formData.tipo_solicitud_traslado ? tipoSolicitudMap[formData.tipo_solicitud_traslado] || formData.tipo_solicitud_traslado : '',
+        nivel_atencion_traslado: formData.nivel_atencion_traslado ? nivelAtencionMap[formData.nivel_atencion_traslado] || formData.nivel_atencion_traslado : '',
+      }
+      console.log('Creating gestion with payload:', payload)
+      await createGestion(payload)
       navigate(`/episodios/${episodioId}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al crear la gestión')
@@ -220,16 +232,46 @@ export function CreateGestionPage() {
                 <div className="border-t pt-6">
                   <h3 className="text-base font-semibold text-gray-900 mb-4">Información de Traslado</h3>
                   
-                  {/* Centro de Destinatario */}
+                  {/* Estado Traslado */}
                   <div className="mb-4">
-                    <SearchableSelect
-                      label="Centro de Destinatario"
-                      options={centrosDestino}
-                      value={formData.centro_destinatario}
-                      onChange={(value) => setFormData({ ...formData, centro_destinatario: value })}
-                      placeholder="Busca un centro..."
-                      required
-                    />
+                    <label htmlFor="estado_traslado" className="block text-sm font-medium text-gray-700 mb-2">
+                      Estado Traslado <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      id="estado_traslado"
+                      name="estado_traslado"
+                      value={formData.estado_traslado}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#671E75] focus:border-transparent"
+                    >
+                      <option value="">Selecciona un estado</option>
+                      {estadosTransfer.map((estado) => (
+                        <option key={estado.value} value={estado.display}>
+                          {estado.display}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Tipo Traslado */}
+                  <div className="mb-4">
+                    <label htmlFor="tipo_traslado" className="block text-sm font-medium text-gray-700 mb-2">
+                      Tipo Traslado <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      id="tipo_traslado"
+                      name="tipo_traslado"
+                      value={formData.tipo_traslado}
+                      onChange={handleChange}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#671E75] focus:border-transparent"
+                    >
+                      <option value="">Selecciona un tipo de traslado</option>
+                      {tipo_traslado.map((tipo) => (
+                        <option key={tipo.value} value={tipo.display}>
+                          {tipo.display}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   {/* Motivo de Traslado */}
@@ -253,110 +295,62 @@ export function CreateGestionPage() {
                     </select>
                   </div>
 
-                  {/* Tipo de Solicitud */}
+                  {/* Centro de Destinatario */}
                   <div className="mb-4">
-                    <label htmlFor="tipo_solicitud" className="block text-sm font-medium text-gray-700 mb-2">
+                    <SearchableSelect
+                      label="Centro de Destinatario"
+                      options={centrosDestino}
+                      value={formData.centro_destinatario}
+                      onChange={(value) => setFormData({ ...formData, centro_destinatario: value })}
+                      placeholder="Busca un centro..."
+                      required
+                    />
+                  </div>
+
+                  {/* Tipo de Solicitud Traslado */}
+                  <div className="mb-4">
+                    <label htmlFor="tipo_solicitud_traslado" className="block text-sm font-medium text-gray-700 mb-2">
                       Tipo de Solicitud <span className="text-red-500">*</span>
                     </label>
                     <select
-                      id="tipo_solicitud"
-                      name="tipo_solicitud"
-                      value={formData.tipo_solicitud}
+                      id="tipo_solicitud_traslado"
+                      name="tipo_solicitud_traslado"
+                      value={formData.tipo_solicitud_traslado}
                       onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#671E75] focus:border-transparent"
                     >
                       <option value="">Selecciona un tipo</option>
                       {tiposSolicitud.map((tipo) => (
-                        <option key={tipo} value={tipo}>
-                          {tipo}
+                        <option key={tipo.value} value={tipo.display}>
+                          {tipo.display}
                         </option>
                       ))}
                     </select>
                   </div>
 
-                  {/* Nivel de Atención */}
+                  {/* Nivel de Atención Traslado */}
                   <div className="mb-4">
-                    <label htmlFor="nivel_atencion" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="nivel_atencion_traslado" className="block text-sm font-medium text-gray-700 mb-2">
                       Nivel de Atención <span className="text-red-500">*</span>
                     </label>
                     <select
-                      id="nivel_atencion"
-                      name="nivel_atencion"
-                      value={formData.nivel_atencion}
+                      id="nivel_atencion_traslado"
+                      name="nivel_atencion_traslado"
+                      value={formData.nivel_atencion_traslado}
                       onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#671E75] focus:border-transparent"
                     >
                       <option value="">Selecciona un nivel</option>
                       {nivelesAtencion.map((nivel) => (
-                        <option key={nivel} value={nivel}>
-                          {nivel}
+                        <option key={nivel.value} value={nivel.display}>
+                          {nivel.display}
                         </option>
                       ))}
                     </select>
                   </div>
 
-                  {/* Diagnóstico Transfer */}
-                  <div className="mb-4">
-                    <SearchableSelect
-                      label="Diagnóstico Transfer"
-                      options={diagnostico_transfers}
-                      value={formData.diagnostico_transfer}
-                      onChange={(value) => setFormData({ ...formData, diagnostico_transfer: value })}
-                      placeholder="Busca un diagnóstico..."
-                      required
-                    />
-                  </div>
 
-                  {/* Estado Transfer */}
-                  <div className="mb-4">
-                    <label htmlFor="estado_transfer" className="block text-sm font-medium text-gray-700 mb-2">
-                      Estado Transfer <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      id="estado_transfer"
-                      name="estado_transfer"
-                      value={formData.estado_transfer}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#671E75] focus:border-transparent"
-                    >
-                      <option value="">Selecciona un estado</option>
-                      {estadosTransfer.map((estado) => (
-                        <option key={estado} value={estado}>
-                          {estado}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Fecha/Hora Inicio Traslado */}
-                  <div className="mb-4">
-                    <label htmlFor="fecha_hora_inicio_traslado" className="block text-sm font-medium text-gray-700 mb-2">
-                      Fecha/Hora Inicio Traslado
-                    </label>
-                    <Input
-                      type="datetime-local"
-                      id="fecha_hora_inicio_traslado"
-                      name="fecha_hora_inicio_traslado"
-                      value={formData.fecha_hora_inicio_traslado}
-                      onChange={handleChange}
-                      className="w-full"
-                    />
-                  </div>
-
-                  {/* Fecha/Hora Finalización Traslado */}
-                  <div className="mb-4">
-                    <label htmlFor="fecha_hora_finalizacion_traslado" className="block text-sm font-medium text-gray-700 mb-2">
-                      Fecha/Hora Finalización Traslado
-                    </label>
-                    <Input
-                      type="datetime-local"
-                      id="fecha_hora_finalizacion_traslado"
-                      name="fecha_hora_finalizacion_traslado"
-                      value={formData.fecha_hora_finalizacion_traslado}
-                      onChange={handleChange}
-                      className="w-full"
-                    />
-                  </div>
+                  
                 </div>
               )}
 

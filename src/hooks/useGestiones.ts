@@ -19,14 +19,14 @@ export interface Gestion {
   paciente_id?: string
   paciente_nombre?: string
   // Traslado fields
-  centro_destinatario?: string | null
+  estado_traslado?: string | null
+  tipo_traslado?: string | null
   motivo_traslado?: string | null
-  tipo_solicitud?: string | null
-  nivel_atencion?: string | null
-  diagnostico_transfer?: string | null
-  estado_transfer?: string | null
-  fecha_hora_inicio_traslado?: string | null
-  fecha_hora_finalizacion_traslado?: string | null
+  centro_destinatario?: string | null
+  tipo_solicitud_traslado?: string | null
+  nivel_atencion_traslado?: string | null
+  motivo_rechazo_traslado?: string | null
+  motivo_cancelacion_traslado?: string | null
 }
 
 // Interfaz para la respuesta paginada
@@ -37,24 +37,23 @@ export interface PaginatedResponse<T> {
   results: T[]
 }
 
-// Interfaz para crear/actualizar gestión
 export interface GestionInput {
   episodio: string
   usuario?: string | null
   tipo_gestion: string
   informe: string
   estado_gestion: 'INICIADA' | 'EN_PROGRESO' | 'COMPLETADA' | 'CANCELADA'
-  fecha_inicio: string
-  fecha_fin?: string | null
+  fecha_inicio: string // ISO 8601 datetime format
+  fecha_fin?: string | null // ISO 8601 datetime format
   // Traslado fields
-  centro_destinatario?: string | null
+  estado_traslado?: string | null
+  tipo_traslado?: string | null
   motivo_traslado?: string | null
-  tipo_solicitud?: string | null
-  nivel_atencion?: string | null
-  diagnostico_transfer?: string | null
-  estado_transfer?: string | null
-  fecha_hora_inicio_traslado?: string | null
-  fecha_hora_finalizacion_traslado?: string | null
+  centro_destinatario?: string | null
+  tipo_solicitud_traslado?: string | null
+  nivel_atencion_traslado?: string | null
+  motivo_rechazo_traslado?: string | null
+  motivo_cancelacion_traslado?: string | null
 }
 
 export function useGestiones(episodioId?: string) {
@@ -116,6 +115,20 @@ export function useGestiones(episodioId?: string) {
 
     if (!response.ok) {
       const error = await response.json()
+      console.error('Backend validation error:', error)
+      
+      // Format validation errors for display
+      if (error.traslado_fields) {
+        throw new Error(error.traslado_fields)
+      } else if (typeof error === 'object') {
+        const errorMessages = Object.entries(error)
+          .map(([field, msgs]) => {
+            const msgArray = Array.isArray(msgs) ? msgs : [msgs]
+            return `${field}: ${msgArray.join(', ')}`
+          })
+          .join('\n')
+        throw new Error(errorMessages || 'Error creating gestion')
+      }
       throw new Error(error.message || 'Error creating gestion')
     }
 
