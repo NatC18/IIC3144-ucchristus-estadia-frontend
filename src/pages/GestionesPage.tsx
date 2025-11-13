@@ -4,9 +4,10 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Search, Filter, Loader2, AlertCircle, RefreshCcw } from 'lucide-react'
+import { Search, Filter, Loader2, AlertCircle, RefreshCcw, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useGestiones, type Gestion } from '@/hooks/useGestiones'
+import { useGestionesEstadisticas } from '@/hooks/useGestionesEstadisticas'
 import { useEnfermeros } from '@/hooks/useEnfermeros'
 
 function getEstadoColor(estado: Gestion['estado_gestion']) {
@@ -24,11 +25,40 @@ function getEstadoColor(estado: Gestion['estado_gestion']) {
   }
 }
 
+function formatDate(dateString: string): string {
+  if (!dateString) return '-'
+  try {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('es-CL', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    })
+  } catch {
+    return '-'
+  }
+}
+
+function formatTime(dateString: string): string {
+  if (!dateString) return '-'
+  try {
+    const date = new Date(dateString)
+    return date.toLocaleTimeString('es-CL', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    })
+  } catch {
+    return '-'
+  }
+}
+
 export function GestionesPage() {
   const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
   const [filterEstado, setFilterEstado] = useState<string>('all')
   const [filterResponsable, setFilterResponsable] = useState<string>('all')
+  const [currentPage, setCurrentPage] = useState(1)
 
   // Usar el hook para obtener datos del backend
   const {
@@ -36,8 +66,13 @@ export function GestionesPage() {
     loading,
     error,
     totalCount,
+    nextPage,
+    previousPage,
     fetchGestiones,
   } = useGestiones()
+
+  // Fetch estadisticas (independent of filters/pagination)
+  const { estadisticas } = useGestionesEstadisticas()
 
   // Fetch enfermeros for the filter dropdown
   const { enfermeros } = useEnfermeros()
@@ -60,30 +95,66 @@ export function GestionesPage() {
   })
 
   // Statistics
-  const totalGestiones = gestiones.length
-  const iniciadas = gestiones.filter(g => g.estado_gestion === 'INICIADA').length
-  const enProgreso = gestiones.filter(g => g.estado_gestion === 'EN_PROGRESO').length
-  const canceladas = gestiones.filter(g => g.estado_gestion === 'CANCELADA').length
-  const completadas = gestiones.filter(g => g.estado_gestion === 'COMPLETADA').length
+  const totalGestiones = estadisticas?.total_gestiones ?? 0
+  const iniciadas = estadisticas?.por_estado?.find(e => e.estado_gestion === 'INICIADA')?.cantidad ?? 0
+  const enProgreso = estadisticas?.por_estado?.find(e => e.estado_gestion === 'EN_PROGRESO')?.cantidad ?? 0
+  const canceladas = estadisticas?.por_estado?.find(e => e.estado_gestion === 'CANCELADA')?.cantidad ?? 0
+  const completadas = estadisticas?.por_estado?.find(e => e.estado_gestion === 'COMPLETADA')?.cantidad ?? 0
 
 
   // Función para refrescar datos
   const handleRefresh = () => {
+    setCurrentPage(1)
     fetchGestiones()
   }
 
   // Función para buscar con filtros
-  const handleSearch = useCallback(() => {
+  const handleSearch = useCallback((page = 1) => {
     fetchGestiones({
       search: undefined,
       estado: filterEstado === 'all' ? undefined : filterEstado,
+      page: page,
     })
   }, [fetchGestiones, filterEstado])
+
+  // Extract page number from URL
+  const extractPageNumber = (url: string | null): number => {
+    if (!url) return 1
+    try {
+      const pageParam = new URL(url).searchParams.get('page')
+      return pageParam ? parseInt(pageParam, 10) : 1
+    } catch {
+      return 1
+    }
+  }
+
+  // Manejar siguiente página
+  const handleNextPage = () => {
+    if (!nextPage) return
+    const nextPageNum = extractPageNumber(nextPage)
+    setCurrentPage(nextPageNum)
+    fetchGestiones({
+      estado: filterEstado === 'all' ? undefined : filterEstado,
+      page: nextPageNum,
+    })
+  }
+
+  // Manejar página anterior
+  const handlePreviousPage = () => {
+    if (!previousPage) return
+    const prevPageNum = extractPageNumber(previousPage)
+    setCurrentPage(prevPageNum)
+    fetchGestiones({
+      estado: filterEstado === 'all' ? undefined : filterEstado,
+      page: prevPageNum,
+    })
+  }
 
   // Buscar automáticamente cuando cambien los filtros
   useEffect(() => {
     const timer = setTimeout(() => {
-      handleSearch()
+      setCurrentPage(1)
+      handleSearch(1)
     }, 500) // Debounce de 500ms
 
     return () => clearTimeout(timer)
@@ -262,6 +333,8 @@ export function GestionesPage() {
                   <TableHead>Episodio</TableHead>
                   <TableHead>Tipo de Gestión</TableHead>
                   <TableHead>Responsable</TableHead>
+                  <TableHead>Fecha de Creación</TableHead>
+                  <TableHead>Hora de Creación</TableHead>
                   <TableHead>Estado</TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
@@ -269,7 +342,7 @@ export function GestionesPage() {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8">
+                    <TableCell colSpan={7} className="text-center py-8">
                       <div className="flex items-center justify-center gap-2 text-gray-500">
                         <Loader2 className="h-4 w-4 animate-spin" />
                         Cargando gestiones...
@@ -292,6 +365,8 @@ export function GestionesPage() {
                       <TableCell className="font-medium">{gestion.episodio_cmbd}</TableCell>
                       <TableCell>{gestion.tipo_gestion}</TableCell>
                       <TableCell>{gestion.usuario_nombre || 'Sin asignar'}</TableCell>
+                      <TableCell>{formatDate(gestion.created_at)}</TableCell>
+                      <TableCell>{formatTime(gestion.created_at)}</TableCell>
                       <TableCell>
                         <Badge 
                           variant="outline" 
@@ -314,7 +389,7 @@ export function GestionesPage() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                    <TableCell colSpan={7} className="text-center py-8 text-gray-500">
                       {searchTerm || filterEstado !== 'all' ? 
                         'No se encontraron gestiones que coincidan con tu búsqueda' :
                         'No hay gestiones disponibles'
@@ -324,6 +399,38 @@ export function GestionesPage() {
                 )}
               </TableBody>
             </Table>
+          </div>
+          
+          {/* Pagination Controls */}
+          <div className="p-6 border-t border-gray-100 flex items-center justify-between">
+            <div className="text-sm text-gray-600">
+              Mostrando {gestiones.length > 0 ? ((currentPage - 1) * 20) + 1 : 0} - {Math.min(currentPage * 20, totalCount)} de {totalCount} gestiones
+            </div>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                disabled={!previousPage || loading}
+                onClick={handlePreviousPage}
+                className="flex items-center gap-2"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Anterior
+              </Button>
+              <span className="text-sm text-gray-600">
+                Página {currentPage}
+              </span>
+              <Button 
+                variant="outline" 
+                size="sm"
+                disabled={!nextPage || loading}
+                onClick={handleNextPage}
+                className="flex items-center gap-2"
+              >
+                Siguiente
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </main>
