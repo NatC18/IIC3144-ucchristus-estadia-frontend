@@ -42,6 +42,7 @@ export function usePacientes() {
       setPacientes(data.results || [])
       setTotalCount(data.count || 0)
       
+      console.log('Pacientes loaded:', data.results)
       
     } catch (err) {
       console.error('Error fetching pacientes:', err)

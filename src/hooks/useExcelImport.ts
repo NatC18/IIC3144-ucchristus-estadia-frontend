@@ -46,13 +46,15 @@ export const useExcelImport = () => {
   const uploadFiles = useCallback(async (
     excel1: File,
     excel2: File,
-    excel3: File
+    excel3: File,
+    excel4: File
   ): Promise<ExcelImportResponse> => {
     // Validar archivos
     const files = [
       { file: excel1, name: 'Excel 1' },
       { file: excel2, name: 'Excel 2' },
-      { file: excel3, name: 'Excel 3' }
+      { file: excel3, name: 'Excel 3' },
+      { file: excel4, name: 'Excel 4' },
     ];
 
     for (const { file, name } of files) {
@@ -75,11 +77,11 @@ export const useExcelImport = () => {
     try {
       // Simular progreso de subida
       setState(prev => ({ ...prev, uploadProgress: 25 }));
-      
-      const result = await uploadExcelFiles(excel1, excel2, excel3);
-      
-      setState(prev => ({ 
-        ...prev, 
+
+      const result = await uploadExcelFiles(excel1, excel2, excel3, excel4);
+
+      setState(prev => ({
+        ...prev,
         uploadProgress: 100,
         success: true,
         result,

@@ -45,7 +45,8 @@ const getAuthToken = (): string | null => {
 export const uploadExcelFiles = async (
   excel1: File,
   excel2: File,
-  excel3: File
+  excel3: File,
+  excel4: File
 ): Promise<ExcelImportResponse> => {
   const token = getAuthToken();
   
@@ -53,6 +54,7 @@ export const uploadExcelFiles = async (
   formData.append('excel1', excel1);
   formData.append('excel2', excel2);
   formData.append('excel3', excel3);
+  formData.append('excel4', excel4);
 
   try {
     const response = await fetch(`${API_BASE_URL}/excel/import/`, {
