@@ -20,11 +20,15 @@ export interface Gestion {
   paciente_nombre?: string
   // Traslado fields
   estado_traslado?: string | null
+  estado_traslado_display?: string | null
   tipo_traslado?: string | null
+  tipo_traslado_display?: string | null
   motivo_traslado?: string | null
   centro_destinatario?: string | null
   tipo_solicitud_traslado?: string | null
+  tipo_solicitud_traslado_display?: string | null
   nivel_atencion_traslado?: string | null
+  nivel_atencion_traslado_display?: string | null
   motivo_rechazo_traslado?: string | null
   motivo_cancelacion_traslado?: string | null
 }
