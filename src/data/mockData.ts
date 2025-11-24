@@ -20,7 +20,7 @@ export interface AlertaPredicha {
 export interface Paciente {
   id: number;
   nombre: string;
-  score: number;
+  score: number | undefined | null;
   rut: string;
   prevision: string;
   edad: number;
