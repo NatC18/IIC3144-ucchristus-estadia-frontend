@@ -82,6 +82,7 @@ export function GestionDetailPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [pendingEstadoChange, setPendingEstadoChange] = useState<Gestion['estado_gestion'] | null>(null)
   const [showEstadoConfirmation, setShowEstadoConfirmation] = useState(false)
+  const [updateError, setUpdateError] = useState<string | null>(null)
   const [trasladoForm, setTrasladoForm] = useState({
     estado_traslado: '',
     motivo_rechazo: '',
@@ -90,18 +91,20 @@ export function GestionDetailPage() {
 
   const handleEstadoChange = (nuevoEstado: Gestion['estado_gestion']) => {
     setPendingEstadoChange(nuevoEstado)
+    setUpdateError(null)
     setShowEstadoConfirmation(true)
   }
 
   const confirmEstadoChange = async () => {
     if (!gestion || !pendingEstadoChange) return
     setIsSaving(true)
+    setUpdateError(null)
     try {
       const updateData: Record<string, string> = { estado_gestion: pendingEstadoChange }
       
       // Set fecha_fin when completing the gestion
       if (pendingEstadoChange === 'COMPLETADA') {
-        updateData.fecha_fin = new Date().toISOString().split('T')[0]
+        updateData.fecha_fin = new Date().toISOString()
       }
       
       await updateGestion(gestion.id, updateData)
@@ -111,6 +114,7 @@ export function GestionDetailPage() {
       setPendingEstadoChange(null)
     } catch (err) {
       console.error('Error updating estado:', err)
+      setUpdateError(err instanceof Error ? err.message : 'Error al actualizar el estado')
     } finally {
       setIsSaving(false)
     }
@@ -467,6 +471,24 @@ export function GestionDetailPage() {
                         </p>
                       </div>
                     )}
+
+                    {gestion.fecha_finalizacion_traslado && (
+                      ['CANCELADO', 'COMPLETADO', 'RECHAZADO'].includes(gestion.estado_traslado || '') && (
+                        <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                          <p className="text-sm font-medium text-blue-800 mb-1">Fecha de Finalización</p>
+                          <p className="text-sm text-blue-700">
+                            {new Date(gestion.fecha_finalizacion_traslado).toLocaleString('es-CL', {
+                              year: 'numeric',
+                              month: '2-digit',
+                              day: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              hour12: false,
+                            })}
+                          </p>
+                        </div>
+                      )
+                    )}
                   </CardContent>
                 </Card>
 
@@ -758,6 +780,14 @@ export function GestionDetailPage() {
                     ℹ️ Al completar la gestión, se registrará automáticamente la fecha actual como fecha de finalización.
                   </p>
                 )}
+                
+                {updateError && (
+                  <div className="mb-4 p-3 bg-red-50 rounded-lg border border-red-200 flex items-start gap-2">
+                    <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-red-700 whitespace-pre-wrap">{updateError}</p>
+                  </div>
+                )}
+
                 <div className="flex gap-3">
                   <Button
                     onClick={confirmEstadoChange}

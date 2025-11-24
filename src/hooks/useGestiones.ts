@@ -33,6 +33,7 @@ export interface Gestion {
   nivel_atencion_traslado_display?: string | null
   motivo_rechazo_traslado?: string | null
   motivo_cancelacion_traslado?: string | null
+  fecha_finalizacion_traslado?: string | null
 }
 
 // Interfaz para la respuesta paginada
@@ -154,6 +155,17 @@ export function useGestiones(episodioId?: string) {
 
     if (!response.ok) {
       const error = await response.json()
+      console.error('Backend update error:', error)
+      
+      if (typeof error === 'object' && !error.message) {
+        const errorMessages = Object.entries(error)
+          .map(([field, msgs]) => {
+            const msgArray = Array.isArray(msgs) ? msgs : [msgs]
+            return `${field}: ${msgArray.join(', ')}`
+          })
+          .join('\n')
+        throw new Error(errorMessages || 'Error updating gestion')
+      }
       throw new Error(error.message || 'Error updating gestion')
     }
 
