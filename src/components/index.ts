@@ -7,3 +7,4 @@ export { FileStatus } from './FileStatus';
 export { FilesListComponent as FilesList } from './FilesList';
 export { ExcelMultiUpload } from './ExcelMultiUpload';
 export { ImportStats } from './ImportStats';
+export { NotasCard } from './NotasCard';

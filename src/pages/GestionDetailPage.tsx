@@ -4,9 +4,12 @@ import { Header } from '@/components/Header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Loader2, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Loader2, AlertCircle, AlertTriangle } from 'lucide-react'
 import { Gestion, useGestion, useGestiones } from '@/hooks/useGestiones'
 import { useEnfermeros } from '@/hooks/useEnfermeros'
+import { useNotas } from '@/hooks/useNotas'
+import { NotasCard } from '@/components/NotasCard'
+import { useAuth } from '@/contexts/AuthContext'
 import { 
   estadosTransfer, 
   motivoRechazoTraslado, 
@@ -63,6 +66,7 @@ export function GestionDetailPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { id } = useParams()
+  const { user } = useAuth()
   const { gestion, loading, error, refetch } = useGestion(id || '')
   
   // Get navigation source from location state
@@ -71,35 +75,50 @@ export function GestionDetailPage() {
   const sourceEpisodioId = from?.episodioId
   const { updateGestion } = useGestiones()
   const { enfermeros, loading: loadingEnfermeros } = useEnfermeros()
+  const { createNota, updateNota, deleteNota, loading: loadingNotas } = useNotas()
   const [isEditing, setIsEditing] = useState(false)
   const [isEditingAsignado, setIsEditingAsignado] = useState(false)
   const [isEditingTraslado, setIsEditingTraslado] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [pendingEstadoChange, setPendingEstadoChange] = useState<Gestion['estado_gestion'] | null>(null)
+  const [showEstadoConfirmation, setShowEstadoConfirmation] = useState(false)
   const [trasladoForm, setTrasladoForm] = useState({
     estado_traslado: '',
     motivo_rechazo: '',
     motivo_cancelacion: '',
   })
 
-  const handleEstadoChange = async (nuevoEstado: Gestion['estado_gestion']) => {
-    if (!gestion) return
+  const handleEstadoChange = (nuevoEstado: Gestion['estado_gestion']) => {
+    setPendingEstadoChange(nuevoEstado)
+    setShowEstadoConfirmation(true)
+  }
+
+  const confirmEstadoChange = async () => {
+    if (!gestion || !pendingEstadoChange) return
     setIsSaving(true)
     try {
-      const updateData: any = { estado_gestion: nuevoEstado }
+      const updateData: Record<string, string> = { estado_gestion: pendingEstadoChange }
       
       // Set fecha_fin when completing the gestion
-      if (nuevoEstado === 'COMPLETADA') {
+      if (pendingEstadoChange === 'COMPLETADA') {
         updateData.fecha_fin = new Date().toISOString().split('T')[0]
       }
       
       await updateGestion(gestion.id, updateData)
       await refetch()
       setIsEditing(false)
+      setShowEstadoConfirmation(false)
+      setPendingEstadoChange(null)
     } catch (err) {
       console.error('Error updating estado:', err)
     } finally {
       setIsSaving(false)
     }
+  }
+
+  const cancelEstadoChange = () => {
+    setShowEstadoConfirmation(false)
+    setPendingEstadoChange(null)
   }
 
   const handleUsuarioChange = async (nuevoUsuario: string) => {
@@ -131,7 +150,7 @@ export function GestionDetailPage() {
     
     setIsSaving(true)
     try {
-      const updateData: any = {
+      const updateData: Record<string, string> = {
         estado_traslado: trasladoForm.estado_traslado,
       }
 
@@ -160,6 +179,39 @@ export function GestionDetailPage() {
         motivo_cancelacion: gestion.motivo_cancelacion_traslado || '',
       })
       setIsEditingTraslado(true)
+    }
+  }
+
+  const handleAddNota = async (descripcion: string) => {
+    if (!gestion || !user) return
+    try {
+      await createNota({
+        gestion: gestion.id,
+        descripcion,
+        usuario: user.id,
+        estado: 'pendiente',
+      })
+      await refetch()
+    } catch (err) {
+      console.error('Error adding nota:', err)
+    }
+  }
+
+  const handleDeleteNota = async (notaId: string) => {
+    try {
+      await deleteNota(notaId)
+      await refetch()
+    } catch (err) {
+      console.error('Error deleting nota:', err)
+    }
+  }
+
+  const handleMarkNotaAsLista = async (notaId: string) => {
+    try {
+      await updateNota(notaId, { estado: 'Lista' })
+      await refetch()
+    } catch (err) {
+      console.error('Error updating nota:', err)
     }
   }
 
@@ -273,7 +325,7 @@ export function GestionDetailPage() {
                           variant={gestion.estado_gestion === estado ? 'default' : 'outline'}
                           onClick={() => handleEstadoChange(estado)}
                           disabled={isSaving}
-                          className={gestion.estado_gestion === estado ? 'bg-[#E3AE00] hover:bg-[#E3AE00]/90' : ''}
+                          className={gestion.estado_gestion === estado ? 'bg-[#E3AE00] hover:bg-[#E3AE00]/90 transition-all duration-200' : 'hover:bg-[#671E75]/10 hover:border-[#671E75] transition-all duration-200'}
                         >
                           {getEstadoLabel(estado)}
                         </Button>
@@ -291,7 +343,7 @@ export function GestionDetailPage() {
                   {!isEditing ? (
                     <Button 
                       onClick={() => setIsEditing(true)}
-                      className="text-white hover:text-white"
+                      className="text-white hover:text-white transition-all duration-200 hover:shadow-lg"
                       style={{ backgroundColor: '#671E75' }}
                       disabled={getAllowedTransitions(gestion.estado_gestion).length === 0}
                     >
@@ -303,7 +355,7 @@ export function GestionDetailPage() {
                     <div className="flex gap-2">
                       <Button 
                         onClick={() => setIsEditing(false)}
-                        className="text-white hover:text-white"
+                        className="text-white hover:text-white transition-all duration-200 hover:shadow-lg"
                         style={{ backgroundColor: '#671E75' }}
                         disabled={isSaving}
                       >
@@ -320,6 +372,20 @@ export function GestionDetailPage() {
                 </div>
               </CardContent>
             </Card>
+            {/* Acciones Rápidas */}
+            <Card className="rounded-xl border-0 bg-blue-50">
+              <CardContent className="pt-6">
+                <div className="flex gap-3">
+                  <svg className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div className="text-sm text-blue-800">
+                    <p>Puedes cambiar el estado de la gestión haciendo clic en "Editar Estado" y seleccionando una de las opciones disponibles.</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
 
             {/* Detalles de Traslado */}
             {gestion.tipo_gestion === 'TRASLADO' && (
@@ -658,21 +724,69 @@ export function GestionDetailPage() {
               Ir al Episodio
             </Button>
 
-            {/* Acciones Rápidas */}
-            <Card className="rounded-xl border-0 bg-blue-50">
-              <CardContent className="pt-6">
-                <div className="flex gap-3">
-                  <svg className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <div className="text-sm text-blue-800">
-                    <p>Puedes cambiar el estado de la gestión haciendo clic en "Editar Estado" y seleccionando una de las opciones disponibles.</p>
+            
+            {/* Notas */}
+            {gestion.notas && (
+              <NotasCard
+                notas={gestion.notas}
+                onCreateNota={handleAddNota}
+                onDeleteNota={handleDeleteNota}
+                onMarkAsLista={handleMarkNotaAsLista}
+                loading={loadingNotas}
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Confirmation Dialog for Estado Change */}
+        {showEstadoConfirmation && pendingEstadoChange && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+            <Card className="rounded-xl border-0 max-w-md w-full mx-4 shadow-lg bg-white">
+              <CardHeader>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 rounded-full bg-yellow-100">
+                    <AlertTriangle className="h-6 w-6 text-yellow-600" />
                   </div>
+                  <CardTitle className="text-lg">Confirmar Cambio de Estado</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-700 mb-2">¿Está seguro de que desea cambiar el estado de la gestión a:</p>
+                <p className="text-lg font-semibold text-[#671E75] mb-6">{getEstadoLabel(pendingEstadoChange)}</p>
+                {pendingEstadoChange === 'COMPLETADA' && (
+                  <p className="text-sm text-gray-600 mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    ℹ️ Al completar la gestión, se registrará automáticamente la fecha actual como fecha de finalización.
+                  </p>
+                )}
+                <div className="flex gap-3">
+                  <Button
+                    onClick={confirmEstadoChange}
+                    disabled={isSaving}
+                    className="flex-1 text-white hover:text-white"
+                    style={{ backgroundColor: '#671E75' }}
+                  >
+                    {isSaving ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        Confirmando...
+                      </>
+                    ) : (
+                      'Confirmar'
+                    )}
+                  </Button>
+                  <Button
+                    onClick={cancelEstadoChange}
+                    disabled={isSaving}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    Cancelar
+                  </Button>
                 </div>
               </CardContent>
             </Card>
           </div>
-        </div>
+        )}
       </main>
     </div>
   )

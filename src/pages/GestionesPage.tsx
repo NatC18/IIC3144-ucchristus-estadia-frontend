@@ -77,21 +77,13 @@ export function GestionesPage() {
   // Fetch enfermeros for the filter dropdown
   const { enfermeros } = useEnfermeros()
 
-  // Filter gestiones based on search and filter
+  // Filter gestiones based on search (local filtering for search only, responsable filter is backend)
   const filteredGestiones = gestiones.filter(gestion => {
     const matchesSearch = 
       String(gestion.episodio_cmbd).toLowerCase().includes(searchTerm.toLowerCase()) ||
       String(gestion.tipo_gestion).toLowerCase().includes(searchTerm.toLowerCase())
     
-    const matchesEstadoFilter = filterEstado === 'all' || gestion.estado_gestion === filterEstado
-    
-    const matchesResponsableFilter = filterResponsable === 'all' 
-      ? true 
-      : filterResponsable === 'sin-asignar' 
-      ? !gestion.usuario 
-      : gestion.usuario === filterResponsable
-
-    return matchesSearch && matchesEstadoFilter && matchesResponsableFilter
+    return matchesSearch
   })
 
   // Statistics
@@ -113,9 +105,10 @@ export function GestionesPage() {
     fetchGestiones({
       search: undefined,
       estado: filterEstado === 'all' ? undefined : filterEstado,
+      usuario: filterResponsable === 'all' ? undefined : filterResponsable === 'sin-asignar' ? 'not_assigned' : filterResponsable,
       page: page,
     })
-  }, [fetchGestiones, filterEstado])
+  }, [fetchGestiones, filterEstado, filterResponsable])
 
   // Extract page number from URL
   const extractPageNumber = (url: string | null): number => {
@@ -135,6 +128,7 @@ export function GestionesPage() {
     setCurrentPage(nextPageNum)
     fetchGestiones({
       estado: filterEstado === 'all' ? undefined : filterEstado,
+      usuario: filterResponsable === 'all' ? undefined : filterResponsable === 'sin-asignar' ? 'not_assigned' : filterResponsable,
       page: nextPageNum,
     })
   }
@@ -146,6 +140,7 @@ export function GestionesPage() {
     setCurrentPage(prevPageNum)
     fetchGestiones({
       estado: filterEstado === 'all' ? undefined : filterEstado,
+      usuario: filterResponsable === 'all' ? undefined : filterResponsable === 'sin-asignar' ? 'not_assigned' : filterResponsable,
       page: prevPageNum,
     })
   }
@@ -158,7 +153,7 @@ export function GestionesPage() {
     }, 500) // Debounce de 500ms
 
     return () => clearTimeout(timer)
-  }, [filterEstado, handleSearch])
+  }, [filterEstado, filterResponsable, handleSearch])
 
   return (
     <div className="min-h-screen bg-gray-100">

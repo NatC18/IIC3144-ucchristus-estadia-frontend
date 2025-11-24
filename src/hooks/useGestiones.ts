@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { authService } from '@/services/authService'
+import type { Nota } from '@/types'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api'
 
@@ -18,6 +19,7 @@ export interface Gestion {
   usuario_nombre?: string
   paciente_id?: string
   paciente_nombre?: string
+  notas?: Nota[]
   // Traslado fields
   estado_traslado?: string | null
   estado_traslado_display?: string | null
@@ -73,6 +75,7 @@ export function useGestiones(episodioId?: string) {
     search?: string
     estado?: string
     episodio?: string
+    usuario?: string | null
     page?: number
   }) => {
     try {
@@ -84,6 +87,7 @@ export function useGestiones(episodioId?: string) {
       if (filters?.search) params.append('search', filters.search)
       if (filters?.estado) params.append('estado_gestion', filters.estado)
       if (filters?.episodio || episodioId) params.append('episodio', filters?.episodio || episodioId || '')
+      if (filters?.usuario) params.append('usuario', filters.usuario)
       if (filters?.page) params.append('page', String(filters.page))
 
       const queryString = params.toString()
