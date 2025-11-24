@@ -14,7 +14,6 @@ import {
   motivosTraslado, 
   tiposSolicitud, 
   nivelesAtencion, 
-  estadosTransfer,
   tipo_traslado,
   estadoTrasladoMap,
   tipoTrasladoMap,
@@ -67,7 +66,7 @@ export function CreateGestionPage() {
     fecha_inicio: new Date().toISOString(),
     fecha_fin: null,
     // Traslado fields
-    estado_traslado: '',
+    estado_traslado: 'PENDIENTE',
     tipo_traslado: '',
     motivo_traslado: '',
     centro_destinatario: '',
@@ -111,7 +110,7 @@ export function CreateGestionPage() {
 
     // Validate Traslado specific fields if tipo_gestion is TRASLADO
     if (formData.tipo_gestion === 'TRASLADO') {
-      if (!formData.estado_traslado || !formData.tipo_traslado || !formData.motivo_traslado || 
+      if (!formData.tipo_traslado || !formData.motivo_traslado || 
           !formData.centro_destinatario || !formData.tipo_solicitud_traslado || 
           !formData.nivel_atencion_traslado) {
         setError('Por favor complete todos los campos requeridos para el traslado')
@@ -231,28 +230,8 @@ export function CreateGestionPage() {
               {formData.tipo_gestion === 'TRASLADO' && (
                 <div className="border-t pt-6">
                   <h3 className="text-base font-semibold text-gray-900 mb-4">Información de Traslado</h3>
+                  <p className="text-sm text-gray-600 mb-4">El estado inicial del traslado será "Pendiente" y podrá ser actualizado posteriormente.</p>
                   
-                  {/* Estado Traslado */}
-                  <div className="mb-4">
-                    <label htmlFor="estado_traslado" className="block text-sm font-medium text-gray-700 mb-2">
-                      Estado Traslado <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      id="estado_traslado"
-                      name="estado_traslado"
-                      value={formData.estado_traslado}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#671E75] focus:border-transparent"
-                    >
-                      <option value="">Selecciona un estado</option>
-                      {estadosTransfer.map((estado) => (
-                        <option key={estado.value} value={estado.display}>
-                          {estado.display}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
                   {/* Tipo Traslado */}
                   <div className="mb-4">
                     <label htmlFor="tipo_traslado" className="block text-sm font-medium text-gray-700 mb-2">

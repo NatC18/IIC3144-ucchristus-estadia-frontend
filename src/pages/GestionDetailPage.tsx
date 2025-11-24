@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { Header } from '@/components/Header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -13,7 +13,12 @@ import { useAuth } from '@/contexts/AuthContext'
 import { 
   estadosTransfer, 
   motivoRechazoTraslado, 
-  motivoCancelacionTraslado 
+  motivoCancelacionTraslado,
+  tipo_traslado,
+  motivosTraslado,
+  tiposSolicitud,
+  nivelesAtencion,
+  centrosDestino,
 } from '@/data/destinos'
 
 function getEstadoColor(estado: string) {
@@ -46,6 +51,24 @@ function getEstadoLabel(estado: string) {
   }
 }
 
+// Get color for traslado estado
+function getEstadoTrasladoColor(estado: string) {
+  switch (estado) {
+    case 'PENDIENTE':
+      return 'bg-gray-100 text-gray-800'
+    case 'ACEPTADO':
+      return 'bg-blue-100 text-blue-800'
+    case 'COMPLETADO':
+      return 'bg-green-100 text-green-800'
+    case 'CANCELADO':
+      return 'bg-yellow-100 text-yellow-800'
+    case 'RECHAZADO':
+      return 'bg-red-100 text-red-800'
+    default:
+      return 'bg-gray-100 text-gray-800'
+  }
+}
+
 // Get allowed transitions for each estado
 function getAllowedTransitions(currentEstado: Gestion['estado_gestion']): Gestion['estado_gestion'][] {
   switch (currentEstado) {
@@ -68,6 +91,7 @@ export function GestionDetailPage() {
   const { id } = useParams()
   const { user } = useAuth()
   const { gestion, loading, error, refetch } = useGestion(id || '')
+  const trasladoStatusEditRef = useRef<HTMLDivElement>(null)
   
   // Get navigation source from location state
   const from = (location.state as { from?: string, episodioId?: string } | null)
@@ -83,10 +107,18 @@ export function GestionDetailPage() {
   const [pendingEstadoChange, setPendingEstadoChange] = useState<Gestion['estado_gestion'] | null>(null)
   const [showEstadoConfirmation, setShowEstadoConfirmation] = useState(false)
   const [updateError, setUpdateError] = useState<string | null>(null)
+  const [isEditingTrasladoFields, setIsEditingTrasladoFields] = useState(false)
   const [trasladoForm, setTrasladoForm] = useState({
     estado_traslado: '',
     motivo_rechazo: '',
     motivo_cancelacion: '',
+  })
+  const [trasladoFieldsForm, setTrasladoFieldsForm] = useState({
+    tipo_traslado: '',
+    motivo_traslado: '',
+    centro_destinatario: '',
+    tipo_solicitud_traslado: '',
+    nivel_atencion_traslado: '',
   })
 
   const handleEstadoChange = (nuevoEstado: Gestion['estado_gestion']) => {
@@ -164,12 +196,19 @@ export function GestionDetailPage() {
         updateData.motivo_rechazo_traslado = trasladoForm.motivo_rechazo
       }
 
+      // If traslado is marked as COMPLETADO, also update the gestion estado to COMPLETADA
+      if (trasladoForm.estado_traslado === 'COMPLETADO') {
+        updateData.estado_gestion = 'COMPLETADA'
+        updateData.fecha_fin = new Date().toISOString()
+      }
+
       await updateGestion(gestion.id, updateData)
       await refetch()
       setIsEditingTraslado(false)
       setTrasladoForm({ estado_traslado: '', motivo_rechazo: '', motivo_cancelacion: '' })
     } catch (err) {
       console.error('Error updating traslado:', err)
+      setUpdateError(err instanceof Error ? err.message : 'Error al actualizar el traslado')
     } finally {
       setIsSaving(false)
     }
@@ -183,6 +222,55 @@ export function GestionDetailPage() {
         motivo_cancelacion: gestion.motivo_cancelacion_traslado || '',
       })
       setIsEditingTraslado(true)
+      
+      // Scroll to the traslado edit card
+      setTimeout(() => {
+        trasladoStatusEditRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }, 0)
+    }
+  }
+
+  const openTrasladoFieldsEdit = () => {
+    if (gestion) {
+      setTrasladoFieldsForm({
+        tipo_traslado: gestion.tipo_traslado || '',
+        motivo_traslado: gestion.motivo_traslado || '',
+        centro_destinatario: gestion.centro_destinatario || '',
+        tipo_solicitud_traslado: gestion.tipo_solicitud_traslado || '',
+        nivel_atencion_traslado: gestion.nivel_atencion_traslado || '',
+      })
+      setIsEditingTrasladoFields(true)
+    }
+  }
+
+  const handleTrasladoFieldsChange = async () => {
+    if (!gestion) return
+    
+    setIsSaving(true)
+    try {
+      const updateData: Record<string, string> = {
+        tipo_traslado: trasladoFieldsForm.tipo_traslado,
+        motivo_traslado: trasladoFieldsForm.motivo_traslado,
+        centro_destinatario: trasladoFieldsForm.centro_destinatario,
+        tipo_solicitud_traslado: trasladoFieldsForm.tipo_solicitud_traslado,
+        nivel_atencion_traslado: trasladoFieldsForm.nivel_atencion_traslado,
+      }
+
+      await updateGestion(gestion.id, updateData)
+      await refetch()
+      setIsEditingTrasladoFields(false)
+      setTrasladoFieldsForm({
+        tipo_traslado: '',
+        motivo_traslado: '',
+        centro_destinatario: '',
+        tipo_solicitud_traslado: '',
+        nivel_atencion_traslado: '',
+      })
+    } catch (err) {
+      console.error('Error updating traslado fields:', err)
+      setUpdateError(err instanceof Error ? err.message : 'Error al actualizar los campos de traslado')
+    } finally {
+      setIsSaving(false)
     }
   }
 
@@ -397,104 +485,257 @@ export function GestionDetailPage() {
                 <Card className="rounded-xl border-0 bg-white">
                   <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle className="text-lg font-semibold">Detalles de Traslado</CardTitle>
-                    {!isEditingTraslado && (gestion.estado_traslado === 'ACEPTADO' || gestion.estado_traslado === 'PENDIENTE') && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={openTrasladoEdit}
-                        className="text-[#671E75] hover:bg-purple-50"
-                      >
-                        Actualizar estado
-                      </Button>
-                    )}
-                   
+                    <div className="flex gap-2">
+                      {!isEditingTrasladoFields && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={openTrasladoFieldsEdit}
+                          className="text-[#671E75] hover:bg-purple-50"
+                        >
+                          Editar datos
+                        </Button>
+                      )}
+                      {!isEditingTraslado && (gestion.estado_traslado === 'ACEPTADO' || gestion.estado_traslado === 'PENDIENTE') && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={openTrasladoEdit}
+                          className="text-[#671E75] hover:bg-purple-50"
+                        >
+                          Actualizar estado
+                        </Button>
+                      )}
+                    </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm font-medium text-gray-600 mb-1">Estado de Traslado</p>
-                        <p className="text-base font-semibold text-gray-900">
-                          {gestion.estado_traslado_display || gestion.estado_traslado || 'N/A'}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600 mb-1">Tipo de Traslado</p>
-                        <p className="text-base font-semibold text-gray-900">
-                          {gestion.tipo_traslado_display || gestion.tipo_traslado || 'N/A'}
-                        </p>
-                      </div>
-                    </div>
+                    {isEditingTrasladoFields ? (
+                      <div className="space-y-4">
+                        {/* Tipo Traslado */}
+                        <div>
+                          <label className="text-sm font-medium text-gray-700 mb-2 block">
+                            Tipo de Traslado
+                          </label>
+                          <select
+                            value={trasladoFieldsForm.tipo_traslado}
+                            onChange={(e) => setTrasladoFieldsForm({ ...trasladoFieldsForm, tipo_traslado: e.target.value })}
+                            disabled={isSaving}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#671E75] focus:border-transparent text-sm"
+                          >
+                            <option value="">Selecciona un tipo</option>
+                            {tipo_traslado.map((tipo) => (
+                              <option key={tipo.value} value={tipo.value}>
+                                {tipo.display}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm font-medium text-gray-600 mb-1">Tipo de Solicitud</p>
-                        <p className="text-base font-semibold text-gray-900">
-                          {gestion.tipo_solicitud_traslado_display || gestion.tipo_solicitud_traslado || 'N/A'}
-                        </p>
+                        {/* Motivo Traslado */}
+                        <div>
+                          <label className="text-sm font-medium text-gray-700 mb-2 block">
+                            Motivo de Traslado
+                          </label>
+                          <select
+                            value={trasladoFieldsForm.motivo_traslado}
+                            onChange={(e) => setTrasladoFieldsForm({ ...trasladoFieldsForm, motivo_traslado: e.target.value })}
+                            disabled={isSaving}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#671E75] focus:border-transparent text-sm"
+                          >
+                            <option value="">Selecciona un motivo</option>
+                            {motivosTraslado.map((motivo) => (
+                              <option key={motivo} value={motivo}>
+                                {motivo}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Centro Destinatario */}
+                        <div>
+                          <label className="text-sm font-medium text-gray-700 mb-2 block">
+                            Centro Destinatario
+                          </label>
+                          <select
+                            value={trasladoFieldsForm.centro_destinatario}
+                            onChange={(e) => setTrasladoFieldsForm({ ...trasladoFieldsForm, centro_destinatario: e.target.value })}
+                            disabled={isSaving}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#671E75] focus:border-transparent text-sm max-h-40"
+                          >
+                            <option value="">Selecciona un centro</option>
+                            {centrosDestino.map((centro) => (
+                              <option key={centro} value={centro}>
+                                {centro}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Tipo Solicitud */}
+                        <div>
+                          <label className="text-sm font-medium text-gray-700 mb-2 block">
+                            Tipo de Solicitud
+                          </label>
+                          <select
+                            value={trasladoFieldsForm.tipo_solicitud_traslado}
+                            onChange={(e) => setTrasladoFieldsForm({ ...trasladoFieldsForm, tipo_solicitud_traslado: e.target.value })}
+                            disabled={isSaving}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#671E75] focus:border-transparent text-sm"
+                          >
+                            <option value="">Selecciona un tipo</option>
+                            {tiposSolicitud.map((tipo) => (
+                              <option key={tipo.value} value={tipo.value}>
+                                {tipo.display}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Nivel Atención */}
+                        <div>
+                          <label className="text-sm font-medium text-gray-700 mb-2 block">
+                            Nivel de Atención
+                          </label>
+                          <select
+                            value={trasladoFieldsForm.nivel_atencion_traslado}
+                            onChange={(e) => setTrasladoFieldsForm({ ...trasladoFieldsForm, nivel_atencion_traslado: e.target.value })}
+                            disabled={isSaving}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#671E75] focus:border-transparent text-sm"
+                          >
+                            <option value="">Selecciona un nivel</option>
+                            {nivelesAtencion.map((nivel) => (
+                              <option key={nivel.value} value={nivel.value}>
+                                {nivel.display}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="flex gap-2 pt-4">
+                          <Button
+                            onClick={handleTrasladoFieldsChange}
+                            disabled={isSaving || !trasladoFieldsForm.tipo_traslado || !trasladoFieldsForm.motivo_traslado || 
+                              !trasladoFieldsForm.centro_destinatario || !trasladoFieldsForm.tipo_solicitud_traslado || 
+                              !trasladoFieldsForm.nivel_atencion_traslado}
+                            className="text-white hover:text-white"
+                            style={{ backgroundColor: '#671E75' }}
+                          >
+                            {isSaving ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                Guardando...
+                              </>
+                            ) : (
+                              'Guardar'
+                            )}
+                          </Button>
+                          <Button
+                            onClick={() => {
+                              setIsEditingTrasladoFields(false)
+                              setTrasladoFieldsForm({
+                                tipo_traslado: '',
+                                motivo_traslado: '',
+                                centro_destinatario: '',
+                                tipo_solicitud_traslado: '',
+                                nivel_atencion_traslado: '',
+                              })
+                            }}
+                            variant="outline"
+                            disabled={isSaving}
+                          >
+                            Cancelar
+                          </Button>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-medium text-gray-600 mb-1">Nivel de Atención</p>
-                        <p className="text-base font-semibold text-gray-900">
-                          {gestion.nivel_atencion_traslado_display || gestion.nivel_atencion_traslado || 'N/A'}
-                        </p>
-                      </div>
-                    </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-sm font-medium text-gray-600 mb-1">Estado de Traslado</p>
+                            <span className={`inline-block px-3 py-1 text-sm font-semibold rounded-full ${getEstadoTrasladoColor(gestion.estado_traslado || '')}`}>
+                              {gestion.estado_traslado_display || gestion.estado_traslado || 'N/A'}
+                            </span>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-gray-600 mb-1">Tipo de Traslado</p>
+                            <p className="text-base font-semibold text-gray-900">
+                              {gestion.tipo_traslado_display || gestion.tipo_traslado || 'N/A'}
+                            </p>
+                          </div>
+                        </div>
 
-                    <div>
-                      <p className="text-sm font-medium text-gray-600 mb-1">Centro Destinatario</p>
-                      <p className="text-base text-gray-900">
-                        {gestion.centro_destinatario || 'N/A'}
-                      </p>
-                    </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-sm font-medium text-gray-600 mb-1">Tipo de Solicitud</p>
+                            <p className="text-base font-semibold text-gray-900">
+                              {gestion.tipo_solicitud_traslado_display || gestion.tipo_solicitud_traslado || 'N/A'}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-gray-600 mb-1">Nivel de Atención</p>
+                            <p className="text-base font-semibold text-gray-900">
+                              {gestion.nivel_atencion_traslado_display || gestion.nivel_atencion_traslado || 'N/A'}
+                            </p>
+                          </div>
+                        </div>
 
-                    <div>
-                      <p className="text-sm font-medium text-gray-600 mb-1">Motivo del Traslado</p>
-                      <p className="text-base text-gray-900">
-                        {gestion.motivo_traslado || 'N/A'}
-                      </p>
-                    </div>
-
-                    {gestion.motivo_rechazo_traslado && (
-                      <div className="bg-red-50 p-3 rounded-lg border border-red-200">
-                        <p className="text-sm font-medium text-red-800 mb-1">Motivo de Rechazo</p>
-                        <p className="text-sm text-red-700">
-                          {gestion.motivo_rechazo_traslado}
-                        </p>
-                      </div>
-                    )}
-
-                    {gestion.motivo_cancelacion_traslado && (
-                      <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
-                        <p className="text-sm font-medium text-yellow-800 mb-1">Motivo de Cancelación</p>
-                        <p className="text-sm text-yellow-700">
-                          {gestion.motivo_cancelacion_traslado}
-                        </p>
-                      </div>
-                    )}
-
-                    {gestion.fecha_finalizacion_traslado && (
-                      ['CANCELADO', 'COMPLETADO', 'RECHAZADO'].includes(gestion.estado_traslado || '') && (
-                        <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
-                          <p className="text-sm font-medium text-blue-800 mb-1">Fecha de Finalización</p>
-                          <p className="text-sm text-blue-700">
-                            {new Date(gestion.fecha_finalizacion_traslado).toLocaleString('es-CL', {
-                              year: 'numeric',
-                              month: '2-digit',
-                              day: '2-digit',
-                              hour: '2-digit',
-                              minute: '2-digit',
-                              hour12: false,
-                            })}
+                        <div>
+                          <p className="text-sm font-medium text-gray-600 mb-1">Centro Destinatario</p>
+                          <p className="text-base text-gray-900">
+                            {gestion.centro_destinatario || 'N/A'}
                           </p>
                         </div>
-                      )
+
+                        <div>
+                          <p className="text-sm font-medium text-gray-600 mb-1">Motivo del Traslado</p>
+                          <p className="text-base text-gray-900">
+                            {gestion.motivo_traslado || 'N/A'}
+                          </p>
+                        </div>
+
+                        {gestion.motivo_rechazo_traslado && (
+                          <div className="bg-red-50 p-3 rounded-lg border border-red-200">
+                            <p className="text-sm font-medium text-red-800 mb-1">Motivo de Rechazo</p>
+                            <p className="text-sm text-red-700">
+                              {gestion.motivo_rechazo_traslado}
+                            </p>
+                          </div>
+                        )}
+
+                        {gestion.motivo_cancelacion_traslado && (
+                          <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                            <p className="text-sm font-medium text-yellow-800 mb-1">Motivo de Cancelación</p>
+                            <p className="text-sm text-yellow-700">
+                              {gestion.motivo_cancelacion_traslado}
+                            </p>
+                          </div>
+                        )}
+
+                        {gestion.fecha_finalizacion_traslado && (
+                          ['CANCELADO', 'COMPLETADO', 'RECHAZADO'].includes(gestion.estado_traslado || '') && (
+                            <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                              <p className="text-sm font-medium text-blue-800 mb-1">Fecha de Finalización</p>
+                              <p className="text-sm text-blue-700">
+                                {new Date(gestion.fecha_finalizacion_traslado).toLocaleString('es-CL', {
+                                  year: 'numeric',
+                                  month: '2-digit',
+                                  day: '2-digit',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                  hour12: false,
+                                })}
+                              </p>
+                            </div>
+                          )
+                        )}
+                      </div>
                     )}
                   </CardContent>
                 </Card>
 
                 {/* Edit Traslado Card - Appears Below */}
                 {isEditingTraslado && (
-                  <Card className="rounded-xl border-0 bg-purple-50 border-2 border-purple-200">
+                  <Card ref={trasladoStatusEditRef} className="rounded-xl border-0 bg-purple-50 border-2 border-purple-200">
                     <CardHeader>
                       <CardTitle className="text-lg font-semibold text-purple-900">Editar Estado de Traslado</CardTitle>
                     </CardHeader>
@@ -622,20 +863,7 @@ export function GestionDetailPage() {
                 <CardTitle className="text-lg font-semibold">Información Adicional</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {/* <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Fecha de Inicio</p>
-                  <p className="text-sm text-gray-900">
-                    {new Date(gestion.fecha_inicio).toLocaleString('es-CL', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false // Set to false for 24-hour format, or true for 12-hour
-                      })};
-                    {new Date(gestion.fecha_inicio).toLocaleString('es-CL')}
-                  </p>
-                </div> */}
+               
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">Fecha de Inicio</p>
                   <p className="text-sm text-gray-900">
