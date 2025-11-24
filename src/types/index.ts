@@ -81,6 +81,18 @@ export interface EpisodioEstadisticas {
   altas_hoy: number
 }
 
+// ==================== NOTAS ====================
+
+export interface Nota {
+  id: string
+  gestion: string
+  usuario?: string | null
+  usuario_nombre?: string
+  descripcion: string
+  fecha_nota: string
+  estado: string
+}
+
 // ==================== RESPUESTAS PAGINADAS ====================
 
 export interface PaginatedResponse<T> {
