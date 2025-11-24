@@ -176,7 +176,7 @@ export function ExcelMultiUpload({ onUploadSuccess, onUploadError }: ExcelMultiU
       </div>
 
       {/* Slots para archivos */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         {fileSlots.map((slot) => (
           <div key={slot.id} className="space-y-3">
             <div className="text-center">
