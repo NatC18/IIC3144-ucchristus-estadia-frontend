@@ -21,7 +21,7 @@ interface ExcelMultiUploadProps {
 }
 
 interface FileSlot {
-  id: 'excel1' | 'excel2' | 'excel3';
+  id: 'excel1' | 'excel2' | 'excel3' | 'excel4';
   label: string;
   description: string;
   file: File | null;
@@ -62,9 +62,16 @@ export function ExcelMultiUpload({ onUploadSuccess, onUploadError }: ExcelMultiU
       file: null,
       dragActive: false,
     },
+    {
+      id: 'excel4',
+      label: 'Score Social',
+      description: 'Datos de score social de pacientes',
+      file: null,
+      dragActive: false,
+    },
   ]);
 
-  const updateFileSlot = useCallback((id: 'excel1' | 'excel2' | 'excel3', updates: Partial<FileSlot>) => {
+  const updateFileSlot = useCallback((id: 'excel1' | 'excel2' | 'excel3' | 'excel4', updates: Partial<FileSlot>) => {
     setFileSlots(prev => prev.map(slot => 
       slot.id === id ? { ...slot, ...updates } : slot
     ));
@@ -72,7 +79,7 @@ export function ExcelMultiUpload({ onUploadSuccess, onUploadError }: ExcelMultiU
 
   const handleDragEvents = useCallback((
     e: React.DragEvent,
-    slotId: 'excel1' | 'excel2' | 'excel3',
+    slotId: 'excel1' | 'excel2' | 'excel3' | 'excel4',
     isDragEnter: boolean
   ) => {
     e.preventDefault();
@@ -80,7 +87,7 @@ export function ExcelMultiUpload({ onUploadSuccess, onUploadError }: ExcelMultiU
     updateFileSlot(slotId, { dragActive: isDragEnter });
   }, [updateFileSlot]);
 
-  const handleDrop = useCallback((e: React.DragEvent, slotId: 'excel1' | 'excel2' | 'excel3') => {
+  const handleDrop = useCallback((e: React.DragEvent, slotId: 'excel1' | 'excel2' | 'excel3' | 'excel4') => {
     e.preventDefault();
     e.stopPropagation();
     
@@ -98,7 +105,7 @@ export function ExcelMultiUpload({ onUploadSuccess, onUploadError }: ExcelMultiU
 
   const handleFileChange = useCallback((
     e: React.ChangeEvent<HTMLInputElement>,
-    slotId: 'excel1' | 'excel2' | 'excel3'
+    slotId: 'excel1' | 'excel2' | 'excel3' | 'excel4'
   ) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -110,7 +117,7 @@ export function ExcelMultiUpload({ onUploadSuccess, onUploadError }: ExcelMultiU
     }
   }, [updateFileSlot, validateExcelFile]);
 
-  const removeFile = useCallback((slotId: 'excel1' | 'excel2' | 'excel3') => {
+  const removeFile = useCallback((slotId: 'excel1' | 'excel2' | 'excel3' | 'excel4') => {
     updateFileSlot(slotId, { file: null });
   }, [updateFileSlot]);
 
@@ -118,14 +125,15 @@ export function ExcelMultiUpload({ onUploadSuccess, onUploadError }: ExcelMultiU
     const excel1 = fileSlots.find(slot => slot.id === 'excel1')?.file;
     const excel2 = fileSlots.find(slot => slot.id === 'excel2')?.file;
     const excel3 = fileSlots.find(slot => slot.id === 'excel3')?.file;
+    const excel4 = fileSlots.find(slot => slot.id === 'excel4')?.file;
 
-    if (!excel1 || !excel2 || !excel3) {
-      alert('Por favor selecciona los 3 archivos Excel antes de continuar');
+    if (!excel1 || !excel2 || !excel3 || !excel4) {
+      alert('Por favor selecciona los 4 archivos Excel antes de continuar');
       return;
     }
 
     try {
-      await uploadFiles(excel1, excel2, excel3);
+      await uploadFiles(excel1, excel2, excel3, excel4);
       onUploadSuccess?.();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Error desconocido';
@@ -147,7 +155,7 @@ export function ExcelMultiUpload({ onUploadSuccess, onUploadError }: ExcelMultiU
           </h2>
         </div>
         <p className="text-gray-600">
-          Sube los 3 archivos Excel requeridos para importar los datos a la base de datos
+          Sube los 4 archivos Excel requeridos para importar los datos a la base de datos
         </p>
       </div>
 
@@ -168,7 +176,7 @@ export function ExcelMultiUpload({ onUploadSuccess, onUploadError }: ExcelMultiU
       </div>
 
       {/* Slots para archivos */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         {fileSlots.map((slot) => (
           <div key={slot.id} className="space-y-3">
             <div className="text-center">
