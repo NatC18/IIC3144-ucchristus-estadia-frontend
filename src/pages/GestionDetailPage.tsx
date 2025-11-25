@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { Header } from '@/components/Header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -91,7 +91,6 @@ export function GestionDetailPage() {
   const { id } = useParams()
   const { user } = useAuth()
   const { gestion, loading, error, refetch } = useGestion(id || '')
-  const trasladoStatusEditRef = useRef<HTMLDivElement>(null)
   
   // Get navigation source from location state
   const from = (location.state as { from?: string, episodioId?: string } | null)
@@ -120,6 +119,14 @@ export function GestionDetailPage() {
     tipo_solicitud_traslado: '',
     nivel_atencion_traslado: '',
   })
+
+  const trasladoEditRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (isEditingTraslado && trasladoEditRef.current) {
+      trasladoEditRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+  }, [isEditingTraslado])
 
   const handleEstadoChange = (nuevoEstado: Gestion['estado_gestion']) => {
     setPendingEstadoChange(nuevoEstado)
@@ -222,11 +229,6 @@ export function GestionDetailPage() {
         motivo_cancelacion: gestion.motivo_cancelacion_traslado || '',
       })
       setIsEditingTraslado(true)
-      
-      // Scroll to the traslado edit card
-      setTimeout(() => {
-        trasladoStatusEditRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      }, 0)
     }
   }
 
@@ -735,7 +737,7 @@ export function GestionDetailPage() {
 
                 {/* Edit Traslado Card - Appears Below */}
                 {isEditingTraslado && (
-                  <Card ref={trasladoStatusEditRef} className="rounded-xl border-0 bg-purple-50 border-2 border-purple-200">
+                  <Card ref={trasladoEditRef} className="rounded-xl border-0 bg-purple-50 border-2 border-purple-200">
                     <CardHeader>
                       <CardTitle className="text-lg font-semibold text-purple-900">Editar Estado de Traslado</CardTitle>
                     </CardHeader>
@@ -863,7 +865,20 @@ export function GestionDetailPage() {
                 <CardTitle className="text-lg font-semibold">Información Adicional</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-               
+                {/* <div>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Fecha de Inicio</p>
+                  <p className="text-sm text-gray-900">
+                    {new Date(gestion.fecha_inicio).toLocaleString('es-CL', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false // Set to false for 24-hour format, or true for 12-hour
+                      })};
+                    {new Date(gestion.fecha_inicio).toLocaleString('es-CL')}
+                  </p>
+                </div> */}
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-1">Fecha de Inicio</p>
                   <p className="text-sm text-gray-900">
