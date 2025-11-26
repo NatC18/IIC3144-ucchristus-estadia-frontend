@@ -197,13 +197,13 @@ export function EpisodiosPage() {
                 {/* Filtro Alertas */}
                 <div className="relative">
                   <button
-                    className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#671E75]"
+                    className="flex items-center gap-2 px-4 py-2 bg-[#671E75] text-white rounded-lg text-sm hover:bg-[#551960] focus:outline-none focus:ring-2 focus:ring-[#671E75] focus:ring-offset-2 transition-colors shadow-sm"
                     onClick={() => setShowAlertasDropdown(!showAlertasDropdown)}
                   >
-                    <AlertTriangle className="h-4 w-4 text-gray-500" />
-                    <span>Alertas</span>
+                    <AlertTriangle className="h-4 w-4" />
+                    <span className="font-medium">Filtrar Alertas</span>
                     {filtrosAlertas.length > 0 && (
-                      <span className="bg-[#671E75] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      <span className="bg-white text-[#671E75] text-xs rounded-full w-5 h-5 flex items-center justify-center font-semibold">
                         {filtrosAlertas.length}
                       </span>
                     )}
