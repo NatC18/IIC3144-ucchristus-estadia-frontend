@@ -13,6 +13,11 @@ export interface Cama {
 
 // ==================== EPISODIO ====================
 
+export type TipoAlerta = 
+  | 'score_social_alto' 
+  | 'extension_critica' 
+  | 'prediccion_estadia_larga'
+
 export interface Episodio {
   id: string
   paciente: string
@@ -26,7 +31,9 @@ export interface Episodio {
   estancia_prequirurgica?: number | null
   estancia_postquirurgica?: number | null
   estancia_norma_grd?: number | null
+  prediccion_extension?: number | null
   estancia_dias: number
+  alertas?: TipoAlerta[]
   created_at: string
   updated_at: string
 }
