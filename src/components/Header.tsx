@@ -75,12 +75,9 @@ export function Header() {
               Episodios
             </NavLink>
             <Link to="#" className="text-gray-600 transition-colors hover:text-[#671E75]">
-              Alertas
-            </Link>
-            <Link to="#" className="text-gray-600 transition-colors hover:text-[#671E75]">
               Reportes
             </Link>
-            <Link to="#" className="text-gray-600 transition-colors hover:text-[#671E75]">
+            <Link to="#" className="text-gray-600 transition-colors hover:text-[#671E75] mr-12">
               Administrativo
             </Link>
           </nav>
