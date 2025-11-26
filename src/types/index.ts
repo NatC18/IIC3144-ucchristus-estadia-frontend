@@ -108,3 +108,23 @@ export interface PaginatedResponse<T> {
   previous: string | null
   results: T[]
 }
+
+// ==================== INFORMACION SERVICIO ====================
+
+export interface InformacionServicio {
+  codigo: string
+  descripcion: string,
+  id: string
+}
+
+// ==================== SERVICIO ====================
+
+export interface Servicio {
+  id: string
+  episodio: string
+  descripcion: string
+  tipo: string
+  fecha: string
+  servicio: InformacionServicio
+}
+

@@ -23,3 +23,16 @@ export function getHospitalizacionColor(hospitalizado: PacienteSimplificado['hos
       return 'bg-gray-100 text-gray-800 rounded-full whitespace-nowrap'
   }
 }
+
+export function getServicioColor(servicio: string) {
+  switch (servicio.toUpperCase()) {
+    case 'TRASLADO':
+      return 'bg-blue-100 text-blue-800 rounded-full whitespace-nowrap'
+    case 'EGRESO':
+      return 'bg-green-100 text-green-800 rounded-full whitespace-nowrap'
+    case 'INGRESO':
+      return 'bg-gray-100 text-gray-800 rounded-full whitespace-nowrap'
+    default:
+      return 'bg-gray-100 text-gray-800 rounded-full whitespace-nowrap'
+  }
+}
