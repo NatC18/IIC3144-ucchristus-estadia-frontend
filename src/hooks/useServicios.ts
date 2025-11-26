@@ -24,10 +24,7 @@ export function useServicios(episodioId?: string) {
 
         const data: Servicio[] = await response.json()
 
-
         setServicios(data || [])
-
-        console.log('Servicios cargados:', data)
       }
 
     } catch (err) {
