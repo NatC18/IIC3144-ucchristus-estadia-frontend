@@ -7,7 +7,9 @@ import { ArrowLeft, Plus } from 'lucide-react'
 import { useEpisodio } from '@/hooks/useEpisodio'
 import { usePaciente } from '@/hooks/usePaciente'
 import { useGestiones } from '@/hooks/useGestiones'
+import { useServicios } from '@/hooks/useServicios'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { getServicioColor } from '@/lib/transformations'
 
 
 function getTipoColor(tipo: string) {
@@ -38,6 +40,7 @@ export function EpisodioDetailPage() {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
   const { episodio, loading, error } = useEpisodio(id)
+  const { servicios, loading: loadingServicios, error: errorServicios } = useServicios(episodio?.id)
   const { gestiones, loading: loadingGestiones } = useGestiones(episodio?.id)
   const { paciente } = usePaciente(episodio?.paciente ?? undefined)
 
@@ -236,6 +239,50 @@ export function EpisodioDetailPage() {
                 )}
               </TableBody>  
             </Table>
+
+            <Card className="rounded-xl border-0 bg-white">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">
+                  Servicios Asociados
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {loadingServicios ? (
+                  <p className="text-gray-500">Cargando servicios...</p>
+                ) : errorServicios ? (
+                  <p className="text-red-500">Error al cargar los servicios: {errorServicios}</p>
+                ) : servicios.length === 0 ? (
+                  <p className="text-gray-500">No hay servicios registrados para este episodio.</p>
+                ) : (
+                  <Table className="rounded-lg border-0 bg-white">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Código</TableHead>
+                        <TableHead>Descripción</TableHead>
+                        <TableHead>Fecha</TableHead>
+                        <TableHead>Tipo</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {servicios.map((s) => (
+                        <TableRow key={s.id}>
+                          <TableCell>{s.servicio.codigo}</TableCell>
+                          <TableCell>{s.servicio.descripcion}</TableCell>
+                          <TableCell>
+                            {new Date(s.fecha).toLocaleDateString('es-CL')}
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={getServicioColor(s.tipo)}>
+                              {s.tipo}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
             
 
           </div>
