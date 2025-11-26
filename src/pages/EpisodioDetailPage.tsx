@@ -45,15 +45,6 @@ const getAlertaLabel = (tipo: TipoAlerta): string => {
   return labels[tipo];
 };
 
-const getAlertaColor = (tipo: TipoAlerta): string => {
-  const colors: Record<TipoAlerta, string> = {
-    score_social_alto: 'bg-orange-100 text-orange-800 border-orange-300',
-    extension_critica: 'bg-red-100 text-red-800 border-red-300',
-    prediccion_estadia_larga: 'bg-yellow-100 text-yellow-800 border-yellow-300'
-  };
-  return colors[tipo];
-};
-
 
 export function EpisodioDetailPage() {
   const navigate = useNavigate()
