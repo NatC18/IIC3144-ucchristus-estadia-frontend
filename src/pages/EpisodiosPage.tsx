@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Search, Filter, AlertTriangle } from 'lucide-react'
+import { Search, Filter, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useEpisodios } from '@/hooks/useEpisodios'
 import { usePacientes } from '@/hooks/usePacientes'
@@ -56,9 +56,11 @@ export function EpisodiosPage() {
   const [filterEstado, setFilterEstado] = useState('all')
   const [filtrosAlertas, setFiltrosAlertas] = useState<(TipoAlerta | 'sin_alertas')[]>([])
   const [showAlertasDropdown, setShowAlertasDropdown] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 20
 
   // Filtrar episodios según búsqueda, estado y alertas
-  const filteredEpisodios = episodiosConNombre?.filter(ep => {
+  const allFilteredEpisodios = episodiosConNombre?.filter(ep => {
     const matchesSearch =
       ep.episodio_cmbd?.toString().includes(searchTerm) ||
       ep.paciente_nombre?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -87,6 +89,18 @@ export function EpisodiosPage() {
     return matchesSearch && matchesFilter && matchesAlertas
   }) || []
 
+  // Calcular totales y paginación
+  const totalCount = allFilteredEpisodios.length
+  const totalPages = Math.ceil(totalCount / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const filteredEpisodios = allFilteredEpisodios.slice(startIndex, endIndex)
+
+  // Resetear a página 1 cuando cambien los filtros
+  const handleFilterChange = () => {
+    setCurrentPage(1)
+  }
+
   // Estadísticas
   const total = episodios?.length || 0
   const activos = episodios?.filter(e => !e.fecha_egreso).length || 0
@@ -108,16 +122,43 @@ export function EpisodiosPage() {
         {/* Estadísticas */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white p-6 rounded-xl border-0">
-            <p className="text-sm font-medium text-gray-600">Total Episodios</p>
-            <p className="text-2xl font-bold text-gray-900">{total}</p>
+            <div className="flex items-center">
+              <div className="p-3 rounded-xl" style={{ backgroundColor: '#f3e8ff' }}>
+                <svg className="w-6 h-6" style={{ color: '#671E75' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Total Episodios</p>
+                <p className="text-2xl font-bold text-gray-900">{total}</p>
+              </div>
+            </div>
           </div>
           <div className="bg-white p-6 rounded-xl border-0">
-            <p className="text-sm font-medium text-gray-600">Activos</p>
-            <p className="text-2xl font-bold text-gray-900">{activos}</p>
+            <div className="flex items-center">
+              <div className="p-3 rounded-xl" style={{ backgroundColor: '#FBF2CC' }}>
+                <svg className="w-6 h-6" style={{ color: '#E3AE00' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Activos</p>
+                <p className="text-2xl font-bold text-gray-900">{activos}</p>
+              </div>
+            </div>
           </div>
           <div className="bg-white p-6 rounded-xl border-0">
-            <p className="text-sm font-medium text-gray-600">Egresados</p>
-            <p className="text-2xl font-bold text-gray-900">{egresados}</p>
+            <div className="flex items-center">
+              <div className="p-3 rounded-xl bg-gray-100">
+                <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Egresados</p>
+                <p className="text-2xl font-bold text-gray-900">{egresados}</p>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -143,7 +184,10 @@ export function EpisodiosPage() {
                   <select 
                     className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#671E75]"
                     value={filterEstado}
-                    onChange={(e) => setFilterEstado(e.target.value)}
+                    onChange={(e) => {
+                      setFilterEstado(e.target.value)
+                      handleFilterChange()
+                    }}
                   >
                     <option value="all">Todos</option>
                     <option value="Activo">Activos</option>
@@ -182,6 +226,7 @@ export function EpisodiosPage() {
                                   ? [...prev, 'score_social_alto']
                                   : prev.filter(a => a !== 'score_social_alto')
                               )
+                              handleFilterChange()
                             }}
                             className="w-4 h-4 rounded border-gray-300 text-[#671E75] focus:ring-[#671E75]"
                           />
@@ -197,6 +242,7 @@ export function EpisodiosPage() {
                                   ? [...prev, 'extension_critica']
                                   : prev.filter(a => a !== 'extension_critica')
                               )
+                              handleFilterChange()
                             }}
                             className="w-4 h-4 rounded border-gray-300 text-[#671E75] focus:ring-[#671E75]"
                           />
@@ -212,6 +258,7 @@ export function EpisodiosPage() {
                                   ? [...prev, 'prediccion_estadia_larga']
                                   : prev.filter(a => a !== 'prediccion_estadia_larga')
                               )
+                              handleFilterChange()
                             }}
                             className="w-4 h-4 rounded border-gray-300 text-[#671E75] focus:ring-[#671E75]"
                           />
@@ -228,6 +275,7 @@ export function EpisodiosPage() {
                                   ? [...prev, 'sin_alertas']
                                   : prev.filter(a => a !== 'sin_alertas')
                               )
+                              handleFilterChange()
                             }}
                             className="w-4 h-4 rounded border-gray-300 text-[#671E75] focus:ring-[#671E75]"
                           />
@@ -315,6 +363,38 @@ export function EpisodiosPage() {
                 </TableBody>
               </Table>
             )}
+          </div>
+          
+          {/* Pagination Controls */}
+          <div className="p-6 border-t border-gray-100 flex items-center justify-between">
+            <div className="text-sm text-gray-600">
+              Mostrando {totalCount > 0 ? startIndex + 1 : 0} - {Math.min(endIndex, totalCount)} de {totalCount} episodios
+            </div>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                disabled={currentPage === 1 || isLoading}
+                onClick={() => setCurrentPage(prev => prev - 1)}
+                className="flex items-center gap-2"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Anterior
+              </Button>
+              <span className="text-sm text-gray-600">
+                Página {currentPage} de {totalPages || 1}
+              </span>
+              <Button 
+                variant="outline" 
+                size="sm"
+                disabled={currentPage >= totalPages || isLoading}
+                onClick={() => setCurrentPage(prev => prev + 1)}
+                className="flex items-center gap-2"
+              >
+                Siguiente
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </main>
