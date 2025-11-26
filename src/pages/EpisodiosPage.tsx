@@ -4,10 +4,11 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Search, Filter } from 'lucide-react'
+import { Search, Filter, AlertTriangle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useEpisodios } from '@/hooks/useEpisodios'
 import { usePacientes } from '@/hooks/usePacientes'
+import { TipoAlerta } from '@/types'
 
 function getEstadoColor(estado: string) {
   switch (estado) {
@@ -19,6 +20,24 @@ function getEstadoColor(estado: string) {
       return 'bg-gray-100 text-gray-800 rounded-full whitespace-nowrap'
   }
 }
+
+const getAlertaLabel = (tipo: TipoAlerta): string => {
+  const labels: Record<TipoAlerta, string> = {
+    score_social_alto: 'Score Social Alto',
+    extension_critica: 'Extensión Crítica',
+    prediccion_estadia_larga: 'Predicción Estadía Larga'
+  };
+  return labels[tipo];
+};
+
+const getAlertaColor = (tipo: TipoAlerta): string => {
+  const colors: Record<TipoAlerta, string> = {
+    score_social_alto: 'bg-orange-100 text-orange-800 border-orange-300',
+    extension_critica: 'bg-red-100 text-red-800 border-red-300',
+    prediccion_estadia_larga: 'bg-yellow-100 text-yellow-800 border-yellow-300'
+  };
+  return colors[tipo];
+};
 
 export function EpisodiosPage() {
   const navigate = useNavigate()
@@ -131,6 +150,7 @@ export function EpisodiosPage() {
                     <TableHead>Especialidad</TableHead>
                     <TableHead>Tipo</TableHead>
                     <TableHead>Estado</TableHead>
+                    <TableHead className="w-48">Alertas</TableHead>
                     <TableHead className="text-right">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -149,6 +169,24 @@ export function EpisodiosPage() {
                               {estado}
                             </Badge>
                           </TableCell>
+                          <TableCell className="w-48">
+                            <div className="flex flex-col gap-1">
+                              {ep.alertas && ep.alertas.length > 0 ? (
+                                ep.alertas.map((alerta) => (
+                                  <Badge
+                                    key={alerta}
+                                    variant="outline"
+                                    className={`text-xs whitespace-nowrap w-fit ${getAlertaColor(alerta)}`}
+                                  >
+                                    <AlertTriangle className="w-3 h-3 mr-1" />
+                                    {getAlertaLabel(alerta)}
+                                  </Badge>
+                                ))
+                              ) : (
+                                <span className="text-gray-400 text-sm">Sin alertas</span>
+                              )}
+                            </div>
+                          </TableCell>
                           <TableCell className="text-right">
                             <Button 
                               variant="ghost" 
@@ -164,7 +202,7 @@ export function EpisodiosPage() {
                     })
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                      <TableCell colSpan={7} className="text-center py-8 text-gray-500">
                         No se encontraron episodios
                       </TableCell>
                     </TableRow>
