@@ -54,8 +54,10 @@ export function EpisodiosPage() {
 
   const [searchTerm, setSearchTerm] = useState('')
   const [filterEstado, setFilterEstado] = useState('all')
+  const [filtrosAlertas, setFiltrosAlertas] = useState<(TipoAlerta | 'sin_alertas')[]>([])
+  const [showAlertasDropdown, setShowAlertasDropdown] = useState(false)
 
-  // Filtrar episodios según búsqueda y estado
+  // Filtrar episodios según búsqueda, estado y alertas
   const filteredEpisodios = episodiosConNombre?.filter(ep => {
     const matchesSearch =
       ep.episodio_cmbd?.toString().includes(searchTerm) ||
@@ -66,7 +68,23 @@ export function EpisodiosPage() {
     const estado = activo ? 'Activo' : 'Egresado'
     const matchesFilter = filterEstado === 'all' || estado === filterEstado
 
-    return matchesSearch && matchesFilter
+    // Si no hay filtros de alertas seleccionados, mostrar todos
+    if (filtrosAlertas.length === 0) {
+      return matchesSearch && matchesFilter
+    }
+
+    // Verificar si tiene sin alertas
+    const tieneAlertasVacio = !ep.alertas || ep.alertas.length === 0
+    const matchesSinAlertas = filtrosAlertas.includes('sin_alertas') && tieneAlertasVacio
+    
+    // Verificar si tiene alguna de las alertas seleccionadas
+    const alertasReales = filtrosAlertas.filter(f => f !== 'sin_alertas') as TipoAlerta[]
+    const matchesConAlertas = alertasReales.length > 0 && ep.alertas && 
+      alertasReales.some(filtro => ep.alertas?.includes(filtro))
+
+    const matchesAlertas = matchesSinAlertas || matchesConAlertas
+
+    return matchesSearch && matchesFilter && matchesAlertas
   }) || []
 
   // Estadísticas
@@ -119,7 +137,7 @@ export function EpisodiosPage() {
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
-                {/* Filtro */}
+                {/* Filtro Estado */}
                 <div className="flex items-center gap-2">
                   <Filter className="h-4 w-4 text-gray-500" />
                   <select 
@@ -131,6 +149,93 @@ export function EpisodiosPage() {
                     <option value="Activo">Activos</option>
                     <option value="Egresado">Egresados</option>
                   </select>
+                </div>
+                {/* Filtro Alertas */}
+                <div className="relative">
+                  <button
+                    className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#671E75]"
+                    onClick={() => setShowAlertasDropdown(!showAlertasDropdown)}
+                  >
+                    <AlertTriangle className="h-4 w-4 text-gray-500" />
+                    <span>Alertas</span>
+                    {filtrosAlertas.length > 0 && (
+                      <span className="bg-[#671E75] text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        {filtrosAlertas.length}
+                      </span>
+                    )}
+                  </button>
+                  
+                  {showAlertasDropdown && (
+                    <>
+                      <div 
+                        className="fixed inset-0 z-10" 
+                        onClick={() => setShowAlertasDropdown(false)}
+                      />
+                      <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-20 py-2">
+                        <label className="flex items-center gap-2 px-4 py-2 hover:bg-gray-50 cursor-pointer">
+                          <input 
+                            type="checkbox"
+                            checked={filtrosAlertas.includes('score_social_alto')}
+                            onChange={(e) => {
+                              setFiltrosAlertas(prev => 
+                                e.target.checked 
+                                  ? [...prev, 'score_social_alto']
+                                  : prev.filter(a => a !== 'score_social_alto')
+                              )
+                            }}
+                            className="w-4 h-4 rounded border-gray-300 text-[#671E75] focus:ring-[#671E75]"
+                          />
+                          <span className="text-sm text-gray-700">Score Social Alto</span>
+                        </label>
+                        <label className="flex items-center gap-2 px-4 py-2 hover:bg-gray-50 cursor-pointer">
+                          <input 
+                            type="checkbox"
+                            checked={filtrosAlertas.includes('extension_critica')}
+                            onChange={(e) => {
+                              setFiltrosAlertas(prev => 
+                                e.target.checked 
+                                  ? [...prev, 'extension_critica']
+                                  : prev.filter(a => a !== 'extension_critica')
+                              )
+                            }}
+                            className="w-4 h-4 rounded border-gray-300 text-[#671E75] focus:ring-[#671E75]"
+                          />
+                          <span className="text-sm text-gray-700">Extensión Crítica</span>
+                        </label>
+                        <label className="flex items-center gap-2 px-4 py-2 hover:bg-gray-50 cursor-pointer">
+                          <input 
+                            type="checkbox"
+                            checked={filtrosAlertas.includes('prediccion_estadia_larga')}
+                            onChange={(e) => {
+                              setFiltrosAlertas(prev => 
+                                e.target.checked 
+                                  ? [...prev, 'prediccion_estadia_larga']
+                                  : prev.filter(a => a !== 'prediccion_estadia_larga')
+                              )
+                            }}
+                            className="w-4 h-4 rounded border-gray-300 text-[#671E75] focus:ring-[#671E75]"
+                          />
+                          <span className="text-sm text-gray-700">Predicción Estadía Larga</span>
+                        </label>
+                        <div className="border-t border-gray-200 my-2"></div>
+                        <label className="flex items-center gap-2 px-4 py-2 hover:bg-gray-50 cursor-pointer">
+                          <input 
+                            type="checkbox"
+                            checked={filtrosAlertas.includes('sin_alertas')}
+                            onChange={(e) => {
+                              setFiltrosAlertas(prev => 
+                                e.target.checked 
+                                  ? [...prev, 'sin_alertas']
+                                  : prev.filter(a => a !== 'sin_alertas')
+                              )
+                            }}
+                            className="w-4 h-4 rounded border-gray-300 text-[#671E75] focus:ring-[#671E75]"
+                          />
+                          <span className="text-sm text-gray-700">Sin Alertas</span>
+                        </label>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
