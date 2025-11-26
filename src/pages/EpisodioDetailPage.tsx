@@ -9,6 +9,7 @@ import { usePaciente } from '@/hooks/usePaciente'
 import { useGestiones } from '@/hooks/useGestiones'
 import { useServicios } from '@/hooks/useServicios'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { getServicioColor } from '@/lib/transformations'
 
 
 function getTipoColor(tipo: string) {
@@ -270,7 +271,11 @@ export function EpisodioDetailPage() {
                           <TableCell>
                             {new Date(s.fecha).toLocaleDateString('es-CL')}
                           </TableCell>
-                          <TableCell>{s.tipo}</TableCell>
+                          <TableCell>
+                            <Badge className={getServicioColor(s.tipo)}>
+                              {s.tipo}
+                            </Badge>
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
