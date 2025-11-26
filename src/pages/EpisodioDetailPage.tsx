@@ -3,12 +3,13 @@ import { Header } from '@/components/Header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Plus } from 'lucide-react'
+import { ArrowLeft, Plus, AlertTriangle } from 'lucide-react'
 import { useEpisodio } from '@/hooks/useEpisodio'
 import { usePaciente } from '@/hooks/usePaciente'
 import { useGestiones } from '@/hooks/useGestiones'
 import { useServicios } from '@/hooks/useServicios'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { TipoAlerta } from '@/types'
 import { getServicioColor } from '@/lib/transformations'
 
 
@@ -34,6 +35,24 @@ function getEstadoColor(estado: string) {
       return 'bg-gray-100 text-gray-700 rounded-full px-3 py-1 font-medium'
   }
 }
+
+const getAlertaLabel = (tipo: TipoAlerta): string => {
+  const labels: Record<TipoAlerta, string> = {
+    score_social_alto: 'Score Social Alto',
+    extension_critica: 'Extensión Crítica',
+    prediccion_estadia_larga: 'Predicción Estadía Larga'
+  };
+  return labels[tipo];
+};
+
+const getAlertaColor = (tipo: TipoAlerta): string => {
+  const colors: Record<TipoAlerta, string> = {
+    score_social_alto: 'bg-orange-100 text-orange-800 border-orange-300',
+    extension_critica: 'bg-red-100 text-red-800 border-red-300',
+    prediccion_estadia_larga: 'bg-yellow-100 text-yellow-800 border-yellow-300'
+  };
+  return colors[tipo];
+};
 
 
 export function EpisodioDetailPage() {
@@ -135,6 +154,25 @@ export function EpisodioDetailPage() {
                     </p>
                   </div>
                 </div>
+
+                {/* Alertas del Episodio */}
+                {episodio.alertas && episodio.alertas.length > 0 && (
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 mb-2">Alertas</p>
+                    <div className="flex flex-col gap-1">
+                      {episodio.alertas.map((alerta) => (
+                        <Badge
+                          key={alerta}
+                          variant="outline"
+                          className={`text-xs w-fit ${getAlertaColor(alerta)}`}
+                        >
+                          <AlertTriangle className="w-3 h-3 mr-1" />
+                          {getAlertaLabel(alerta)}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-2">Tipo de Actividad</p>
