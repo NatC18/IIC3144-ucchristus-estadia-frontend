@@ -155,24 +155,27 @@ export function EpisodioDetailPage() {
                   </div>
                 </div>
 
-                {/* Alertas del Episodio */}
-                {episodio.alertas && episodio.alertas.length > 0 && (
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-gray-600 mb-2">Alertas</p>
-                    <div className="flex flex-col gap-1">
-                      {episodio.alertas.map((alerta) => (
-                        <Badge
-                          key={alerta}
-                          variant="outline"
-                          className={`text-xs w-fit ${getAlertaColor(alerta)}`}
-                        >
-                          <AlertTriangle className="w-3 h-3 mr-1" />
-                          {getAlertaLabel(alerta)}
-                        </Badge>
-                      ))}
-                    </div>
+                    <p className="text-sm font-medium text-gray-600 mb-1">Cama Asignada</p>
+                    <p className="text-base text-gray-900">
+                      {episodio.cama?.codigo_cama || 'No asignada'}
+                    </p>
                   </div>
-                )}
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 mb-1">Última Actualización</p>
+                    <p className="text-base text-gray-900">
+                      {new Date(episodio.updated_at).toLocaleString('es-CL', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false 
+                      })}
+                    </p>
+                  </div>
+                </div>
 
                 <div>
                   <p className="text-sm font-medium text-gray-600 mb-2">Tipo de Actividad</p>
@@ -327,36 +330,72 @@ export function EpisodioDetailPage() {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            <Card className="rounded-xl border-0 bg-white">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold">Información Adicional</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Cama Asignada</p>
-                  <p className="text-sm text-gray-900">{episodio.cama?.codigo_cama || 'No asignada'}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Estado</p>
-                  <p className="text-sm text-gray-900">
-                    {episodio.fecha_egreso ? 'Egresado' : 'Activo'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Última Actualización</p>
-                  <p className="text-sm text-gray-900">
-                    {new Date(episodio.updated_at).toLocaleString('es-CL', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false 
-                      })};
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Alertas individuales */}
+            {episodio.alertas && episodio.alertas.map((alerta) => (
+              <Card 
+                key={alerta} 
+                className={`rounded-xl border-0 border-l-4 ${
+                  alerta === 'score_social_alto' 
+                    ? 'bg-orange-50 border-orange-400'
+                    : alerta === 'extension_critica'
+                    ? 'bg-red-50 border-red-400'
+                    : 'bg-yellow-50 border-yellow-400'
+                }`}
+              >
+                <CardContent className="pt-6">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className={`w-5 h-5 mt-0.5 flex-shrink-0 ${
+                      alerta === 'score_social_alto'
+                        ? 'text-orange-600'
+                        : alerta === 'extension_critica'
+                        ? 'text-red-600'
+                        : 'text-yellow-600'
+                    }`} />
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900 mb-2">
+                        {getAlertaLabel(alerta)}
+                      </h3>
+                      
+                      {/* Detalles según tipo de alerta */}
+                      {alerta === 'score_social_alto' && (
+                        <div className="text-sm text-gray-700 space-y-1">
+                          <p>El paciente tiene un <strong>score social de {paciente?.score_social || 'N/A'}</strong>.</p>
+                          <p className="text-gray-600 mt-2">
+                            🚨 Un score social alto puede indicar necesidades especiales de apoyo social o dificultades en el alta hospitalaria.
+                          </p>
+                        </div>
+                      )}
+                      
+                      {alerta === 'extension_critica' && (
+                        <div className="text-sm text-gray-700 space-y-1">
+                          <p>
+                            La estadía actual es de <strong>{episodio.estancia_dias || 0} días</strong>, 
+                            superando la norma GRD de <strong>{episodio.estancia_norma_grd || 0} días</strong>.
+                          </p>
+                          <p className="text-gray-600 mt-2">
+                            🚨 La estadía extendida puede requerir revisión clínica y coordinación para planificar el alta.
+                          </p>
+                        </div>
+                      )}
+                      
+                      {alerta === 'prediccion_estadia_larga' && (
+                        <div className="text-sm text-gray-700 space-y-1">
+                          <p>
+                            El modelo predictivo indica que este episodio tiene <strong>alta probabilidad</strong> de exceder 
+                            la estancia esperada de <strong>{episodio.estancia_norma_grd || 0} días</strong>.
+                          </p>
+                          <p>Estadía actual: <strong>{episodio.estancia_dias || 0} días</strong></p>
+                          <p className="text-gray-600 mt-2">
+                            🚨 Esta predicción permite planificar recursos y coordinar el alta con anticipación.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+
             <Card className="rounded-xl border-0 bg-blue-50">
               <CardContent className="pt-6">
                 <div className="flex gap-3">
