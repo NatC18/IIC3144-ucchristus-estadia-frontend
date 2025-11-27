@@ -2,31 +2,66 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { AlertTriangle } from 'lucide-react'
-import { alertasPredichas } from '@/data/mockData'
+import { useNavigate } from 'react-router-dom'
 
-function getTipoBarreraColor(tipo: string) {
-    switch (tipo) {
-      case 'Social':
-        return 'bg-blue-100 text-blue-800rounded-full whitespace-nowrap'
-      case 'Administrativa':
-        return 'bg-purple-100 rounded-full whitespace-nowrap'
-      case 'Clínica':
-        return 'bg-[#F3D7E0] text-[#B95E82] rounded-full whitespace-nowrap'
-      case 'Técnica':
-        return 'bg-gray-100 text-gray-800 border-gray-200 rounded-full whitespace-nowrap'
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200 rounded-full whitespace-nowrap'
-    }
-  }
+export interface AlertaPrediccion {
+  id: number
+  episodio: string
+  paciente: string
+  dias_estadia: number
+  dias_esperados: number
+  fecha_ingreso: string
+}
+
+interface AlertasPredichasProps {
+  alertas: AlertaPrediccion[]
+  loading?: boolean
+}
+
+export function AlertasPredichas({ alertas, loading }: AlertasPredichasProps) {
+  const navigate = useNavigate()
   
+  // Limitar a las primeras 5 alertas de predicción
+  const alertasLimitadas = alertas.slice(0, 5)
+  
+  if (loading) {
+    return (
+      <Card className="rounded-xl border-0 bg-white">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-yellow-600" />
+            Alertas predichas de larga estadía
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-gray-600 text-sm">Cargando...</p>
+        </CardContent>
+      </Card>
+    )
+  }
 
-export function AlertasPredichas() {
+  if (alertas.length === 0) {
+    return (
+      <Card className="rounded-xl border-0 bg-white">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-yellow-600" />
+            Alertas predichas de larga estadía
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-gray-600 text-sm">No hay alertas de predicción activas</p>
+        </CardContent>
+      </Card>
+    )
+  }
+
   return (
     <Card className="rounded-xl border-0 bg-white">
       <CardHeader>
         <CardTitle className="text-lg font-semibold flex items-center gap-2">
-          <AlertTriangle className="h-5 w-5 text-red-500" />
-          Alertas predichas
+          <AlertTriangle className="h-5 w-5 text-yellow-600" />
+          Alertas predichas de larga estadía
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -34,24 +69,31 @@ export function AlertasPredichas() {
           <TableHeader>
             <TableRow>
               <TableHead>Episodio</TableHead>
-              <TableHead>Tipo de barrera</TableHead>
-              <TableHead>Descripción</TableHead>
+              <TableHead>Paciente</TableHead>
+              <TableHead>Días Actuales</TableHead>
+              <TableHead>Días Esperados</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {alertasPredichas.map((alerta, index) => (
-              <TableRow key={index}>
+            {alertasLimitadas.map((alerta, index) => (
+              <TableRow 
+                key={index}
+                onClick={() => navigate(`/episodios/${alerta.id}`)}
+                className="cursor-pointer hover:bg-gray-50 transition-colors"
+              >
                 <TableCell className="font-medium">{alerta.episodio}</TableCell>
+                <TableCell>{alerta.paciente}</TableCell>
                 <TableCell>
                   <Badge 
                     variant="outline" 
-                    className={getTipoBarreraColor(alerta.tipoBarrera)}
-                    style={alerta.tipoBarrera === 'Administrativa' ? { color: '#671E75', backgroundColor: '#f3e8ff', borderColor: '#d8b4fe' } : {}}
+                    className="bg-yellow-100 text-yellow-800 border-yellow-300"
                   >
-                    {alerta.tipoBarrera}
+                    {alerta.dias_estadia} días
                   </Badge>
                 </TableCell>
-                <TableCell>{alerta.descripcion}</TableCell>
+                <TableCell className="text-gray-600">
+                  {alerta.dias_esperados} días
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

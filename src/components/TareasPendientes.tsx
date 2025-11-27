@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { useNavigate } from 'react-router-dom'
 
 export interface TareaPendiente {
   id: string
@@ -32,6 +33,8 @@ function getEstadoColor(estado: TareaPendiente['estado']) {
 }
 
 export function TareasPendientes({ tareas, loading }: TareasPendientesProps) {
+  const navigate = useNavigate()
+  
   return (
     <Card className="rounded-xl border-0 bg-white">
       <CardHeader>
@@ -55,7 +58,11 @@ export function TareasPendientes({ tareas, loading }: TareasPendientesProps) {
             </TableHeader>
             <TableBody>
               {tareas.map((tarea) => (
-                <TableRow key={tarea.id}>
+                <TableRow 
+                  key={tarea.id}
+                  onClick={() => navigate(`/gestiones/${tarea.id}`)}
+                  className="cursor-pointer hover:bg-gray-50 transition-colors"
+                >
                   <TableCell className="font-medium">{tarea.episodio}</TableCell>
                   <TableCell>{tarea.tipo_gestion}</TableCell>
                   <TableCell>{tarea.descripcion}</TableCell>
