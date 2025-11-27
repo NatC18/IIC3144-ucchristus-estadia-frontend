@@ -1,8 +1,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { useNavigate } from 'react-router-dom'
 
 export interface ExtensionCritica {
+  id: number
   episodio: string
   paciente: string
   dias_estadia: number
@@ -21,6 +23,11 @@ function getDiasEstadiaColor(_dias: number) {
 }
 
 export function ExtensionesCriticas({ extensiones, loading }: ExtensionesCriticasProps) {
+  const navigate = useNavigate()
+  
+  // Limitar a las primeras 5 extensiones críticas
+  const extensionesLimitadas = extensiones.slice(0, 5)
+  
   return (
     <Card className="rounded-xl border-0 bg-white">
       <CardHeader>
@@ -41,8 +48,12 @@ export function ExtensionesCriticas({ extensiones, loading }: ExtensionesCritica
               </TableRow>
             </TableHeader>
             <TableBody>
-              {extensiones.map((extension, index) => (
-                <TableRow key={index}>
+              {extensionesLimitadas.map((extension, index) => (
+                <TableRow 
+                  key={index}
+                  onClick={() => navigate(`/episodios/${extension.id}`)}
+                  className="cursor-pointer hover:bg-gray-50 transition-colors"
+                >
                   <TableCell className="font-medium">{extension.episodio}</TableCell>
                   <TableCell>{extension.paciente}</TableCell>
                   <TableCell>
