@@ -127,7 +127,7 @@ export function EpisodiosPage() {
           </div>
           
           {/* Leyenda del semáforo */}
-          <div className="bg-white border border-gray-200 rounded-lg px-3 py-2 shadow-sm inline-block">
+          <div className="bg-white border border-gray-200 rounded-lg px-3 py-2 inline-block">
             <div className="flex items-center gap-4 text-xs">
               <span className="font-medium text-gray-700">Semáforo de riesgo:</span>
               <div className="flex items-center gap-1.5">
