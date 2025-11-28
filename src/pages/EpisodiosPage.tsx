@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Header } from '@/components/Header'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -58,6 +59,12 @@ export function EpisodiosPage() {
   const [showAlertasDropdown, setShowAlertasDropdown] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 20
+  const [tooltipState, setTooltipState] = useState<{
+    show: boolean
+    text: string
+    x: number
+    y: number
+  }>({ show: false, text: '', x: 0, y: 0 })
 
   // Filtrar episodios según búsqueda, estado y alertas
   const allFilteredEpisodios = episodiosConNombre?.filter(ep => {
@@ -111,12 +118,36 @@ export function EpisodiosPage() {
       <Header />
       <main className="container mx-auto px-6 py-8">
         {/* Header Section */}
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Episodios</h1>
-            <p className="text-gray-600">Monitoreo y gestión de episodios clínicos</p>
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Episodios</h1>
+              <p className="text-gray-600">Monitoreo y gestión de episodios clínicos</p>
+            </div>
           </div>
           
+          {/* Leyenda del semáforo */}
+          <div className="bg-white border border-gray-200 rounded-lg px-3 py-2 shadow-sm inline-block">
+            <div className="flex items-center gap-4 text-xs">
+              <span className="font-medium text-gray-700">Semáforo de riesgo:</span>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-green-500"></div>
+                <span className="text-gray-600">&lt;30%</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-yellow-400"></div>
+                <span className="text-gray-600">30-45%</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-red-500"></div>
+                <span className="text-gray-600">≥45%</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-gray-400"></div>
+                <span className="text-gray-600">Extendido o egresado</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Estadísticas */}
@@ -163,7 +194,7 @@ export function EpisodiosPage() {
         </div>
 
         {/* Tabla principal */}
-        <div className="bg-white rounded-xl border-0">
+        <div className="bg-white rounded-xl border-0 overflow-visible">
           <div className="p-6 border-b border-gray-100">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold">Listado de Episodios</h2>
@@ -289,30 +320,82 @@ export function EpisodiosPage() {
             </div>
           </div>
 
-          <div className="p-6">
+          <div className="p-6 overflow-visible">
             {isLoading ? (
               <p className="text-center text-gray-500">Cargando episodios...</p>
             ) : error ? (
               <p className="text-center text-red-500">Error al cargar episodios</p>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>CMBD</TableHead>
-                    <TableHead>Paciente</TableHead>
-                    <TableHead>Especialidad</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead className="w-48">Alertas</TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+              <div className="overflow-visible">
+                <div className="overflow-x-auto overflow-y-visible">
+                  <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-16 text-center">Riesgo</TableHead>
+                      <TableHead>CMBD</TableHead>
+                      <TableHead>Paciente</TableHead>
+                      <TableHead>Especialidad</TableHead>
+                      <TableHead>Tipo</TableHead>
+                      <TableHead>Estado</TableHead>
+                      <TableHead className="w-48">Alertas</TableHead>
+                      <TableHead className="text-right">Acciones</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                   {filteredEpisodios.length > 0 ? (
                     filteredEpisodios.map((ep) => {
                       const estado = ep.fecha_egreso ? 'Egresado' : 'Activo'
+                      
+                      // Obtener color del semáforo
+                      const getSemaforoColor = () => {
+                        if (!ep.semaforo_riesgo) return 'bg-gray-400'
+                        switch (ep.semaforo_riesgo.color) {
+                          case 'red': return 'bg-red-500'
+                          case 'yellow': return 'bg-yellow-400'
+                          case 'green': return 'bg-green-500'
+                          case 'gray': return 'bg-gray-400'
+                          default: return 'bg-gray-400'
+                        }
+                      }
+                      
+                      const getSemaforoTitle = () => {
+                        if (!ep.semaforo_riesgo) return 'Sin datos de probabilidad'
+                        const prob = ep.semaforo_riesgo.probabilidad
+                        const probText = prob !== null ? ` ${(prob * 100).toFixed(0)}%` : ''
+                        
+                        switch (ep.semaforo_riesgo.color) {
+                          case 'red': return `Alta probabilidad de extenderse:${probText}`
+                          case 'yellow': return `Media probabilidad de extenderse:${probText}`
+                          case 'green': return `Baja probabilidad de extenderse:${probText}`
+                          case 'gray': return ep.fecha_egreso ? 'Ya egresado' : 'Ya extendido'
+                          default: return 'Sin información'
+                        }
+                      }
+                      
                       return (
                         <TableRow key={ep.id}>
+                          <TableCell className="text-center">
+                            <div className="flex justify-center">
+                              <div 
+                                className={`w-3.5 h-3.5 rounded-full ${getSemaforoColor()} transition-transform duration-200 hover:scale-150 cursor-help`}
+                                onMouseEnter={(e) => {
+                                  const rect = e.currentTarget.getBoundingClientRect()
+                                  const title = getSemaforoTitle()
+                                  console.log('Tooltip text:', title) // Debug
+                                  setTooltipState({
+                                    show: true,
+                                    text: title,
+                                    x: rect.left + rect.width / 2,
+                                    y: rect.top - 8
+                                  })
+                                }}
+                                onMouseLeave={() => {
+                                  setTooltipState({ show: false, text: '', x: 0, y: 0 })
+                                }}
+                                title={getSemaforoTitle()}
+                              ></div>
+                            </div>
+                          </TableCell>
                           <TableCell className="font-medium">{ep.episodio_cmbd}</TableCell>
                           <TableCell>{ep.paciente_nombre || '—'}</TableCell>
                           <TableCell>{ep.especialidad || '—'}</TableCell>
@@ -355,13 +438,15 @@ export function EpisodiosPage() {
                     })
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                      <TableCell colSpan={8} className="text-center py-8 text-gray-500">
                         No se encontraron episodios
                       </TableCell>
                     </TableRow>
                   )}
                 </TableBody>
-              </Table>
+                </Table>
+                </div>
+              </div>
             )}
           </div>
           
@@ -398,6 +483,22 @@ export function EpisodiosPage() {
           </div>
         </div>
       </main>
+      
+      {/* Tooltip Portal */}
+      {tooltipState.show && createPortal(
+        <div 
+          style={{ 
+            top: `${tooltipState.y}px`, 
+            left: `${tooltipState.x}px`,
+            transform: 'translate(-50%, -100%)'
+          }}
+          className="fixed z-[9999] bg-gray-900 text-white text-xs rounded-lg py-2 px-3 shadow-xl whitespace-nowrap pointer-events-none"
+        >
+          {tooltipState.text}
+          <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
+        </div>,
+        document.body
+      )}
     </div>
   )
 }
