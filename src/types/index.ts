@@ -32,8 +32,13 @@ export interface Episodio {
   estancia_postquirurgica?: number | null
   estancia_norma_grd?: number | null
   prediccion_extension?: number | null
+  probabilidad_extension?: number | null
   estancia_dias: number
   alertas?: TipoAlerta[]
+  semaforo_riesgo?: {
+    color: 'red' | 'yellow' | 'green' | 'gray'
+    probabilidad: number | null
+  } | null
   created_at: string
   updated_at: string
 }
