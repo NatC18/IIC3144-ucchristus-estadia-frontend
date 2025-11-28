@@ -387,6 +387,53 @@ export function EpisodioDetailPage() {
               </Card>
             ))}
 
+            {/* Semáforo de riesgo - Predicción del modelo */}
+            {episodio.semaforo_riesgo && (
+              <Card className="rounded-xl border-0 bg-white border-l-4 border-gray-300">
+                <CardContent className="pt-6">
+                  <div className="flex items-start gap-3">
+                    <div className={`w-5 h-5 rounded-full mt-0.5 flex-shrink-0 ${
+                      episodio.semaforo_riesgo.color === 'red' ? 'bg-red-500' :
+                      episodio.semaforo_riesgo.color === 'yellow' ? 'bg-yellow-400' :
+                      episodio.semaforo_riesgo.color === 'green' ? 'bg-green-500' :
+                      'bg-gray-400'
+                    }`}></div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900 mb-2">
+                        Predicción del Modelo 
+                      </h3>
+                      <div className="text-sm text-gray-700 space-y-1">
+                        {episodio.semaforo_riesgo.color === 'gray' ? (
+                          <p>
+                            El episodio ya superó el umbral crítico de estadía.
+                            {episodio.semaforo_riesgo.probabilidad !== null && (
+                              <> Probabilidad inicial de extensión: <strong>{(episodio.semaforo_riesgo.probabilidad * 100).toFixed(0)}%</strong></>
+                            )}
+                          </p>
+                        ) : episodio.semaforo_riesgo.probabilidad !== null ? (
+                          <>
+                            <p>
+                              {episodio.semaforo_riesgo.color === 'red' && 'Alta probabilidad de extenderse: '}
+                              {episodio.semaforo_riesgo.color === 'yellow' && 'Media probabilidad de extenderse: '}
+                              {episodio.semaforo_riesgo.color === 'green' && 'Baja probabilidad de extenderse: '}
+                              <strong>{(episodio.semaforo_riesgo.probabilidad * 100).toFixed(0)}%</strong>
+                            </p>
+                            <p className="text-gray-600 mt-2">
+                              {episodio.semaforo_riesgo.color === 'red'}
+                              {episodio.semaforo_riesgo.color === 'yellow' && 'Mantener monitoreo continuo de la evolución del paciente.'}
+                              {episodio.semaforo_riesgo.color === 'green' && 'Evolución dentro de parámetros esperados.'}
+                            </p>
+                          </>
+                        ) : (
+                          <p className="text-gray-600">No hay datos de probabilidad disponibles.</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             <Card className="rounded-xl border-0 bg-blue-50">
               <CardContent className="pt-6">
                 <div className="flex gap-3">
