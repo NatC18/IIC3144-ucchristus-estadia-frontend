@@ -403,14 +403,18 @@ export function EpisodioDetailPage() {
                         Predicción del Modelo 
                       </h3>
                       <div className="text-sm text-gray-700 space-y-1">
-                        {episodio.semaforo_riesgo.color === 'gray' ? (
+                        {episodio.semaforo_riesgo.probabilidad === null ? (
+                          <p className="text-gray-600">
+                            Sin predicción del modelo disponible.
+                          </p>
+                        ) : episodio.semaforo_riesgo.color === 'gray' ? (
                           <p>
                             El episodio ya superó el umbral crítico de estadía.
                             {episodio.semaforo_riesgo.probabilidad !== null && (
                               <> Probabilidad inicial de extensión: <strong>{(episodio.semaforo_riesgo.probabilidad * 100).toFixed(0)}%</strong></>
                             )}
                           </p>
-                        ) : episodio.semaforo_riesgo.probabilidad !== null ? (
+                        ) : (
                           <>
                             <p>
                               {episodio.semaforo_riesgo.color === 'red' && 'Alta probabilidad de extenderse: '}
@@ -419,13 +423,11 @@ export function EpisodioDetailPage() {
                               <strong>{(episodio.semaforo_riesgo.probabilidad * 100).toFixed(0)}%</strong>
                             </p>
                             <p className="text-gray-600 mt-2">
-                              {episodio.semaforo_riesgo.color === 'red'}
+                              {episodio.semaforo_riesgo.color === 'red' && 'Se recomienda planificar recursos adicionales.'}
                               {episodio.semaforo_riesgo.color === 'yellow' && 'Mantener monitoreo continuo de la evolución del paciente.'}
                               {episodio.semaforo_riesgo.color === 'green' && 'Evolución dentro de parámetros esperados.'}
                             </p>
                           </>
-                        ) : (
-                          <p className="text-gray-600">No hay datos de probabilidad disponibles.</p>
                         )}
                       </div>
                     </div>

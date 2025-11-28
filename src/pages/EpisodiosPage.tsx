@@ -367,7 +367,9 @@ export function EpisodiosPage() {
                           case 'red': return `Alta probabilidad de extenderse:${probText}`
                           case 'yellow': return `Media probabilidad de extenderse:${probText}`
                           case 'green': return `Baja probabilidad de extenderse:${probText}`
-                          case 'gray': return ep.fecha_egreso ? 'Ya egresado' : 'Ya extendido'
+                          case 'gray': 
+                            if (prob === null) return 'Sin predicción del modelo'
+                            return ep.fecha_egreso ? 'Ya egresado' : 'Ya extendido'
                           default: return 'Sin información'
                         }
                       }
