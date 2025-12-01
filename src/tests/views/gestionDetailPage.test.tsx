@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { describe, it, beforeEach, expect, vi } from 'vitest'
 import { GestionDetailPage } from '@/pages/GestionDetailPage'
 import { BrowserRouter } from 'react-router-dom'
@@ -37,7 +37,8 @@ vi.mock('@/contexts/AuthContext', () => ({
 }))
 
 vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual<any>('react-router-dom')
+  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom')
+
   return {
     ...actual,
     useParams: () => ({ id: '123' }),
@@ -45,6 +46,7 @@ vi.mock('react-router-dom', async () => {
     useLocation: () => ({ state: null }),
   }
 })
+
 
 // Render helper
 function renderPage() {
