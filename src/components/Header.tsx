@@ -14,7 +14,6 @@ export function Header() {
       navigate('/login')
     } catch (error) {
       console.error('Error en logout:', error)
-      // Forzar navegación aunque haya error
       navigate('/login')
     }
   }
@@ -74,7 +73,7 @@ export function Header() {
             >
               Excel
             </NavLink>
-            {user.rol == "ADMIN" && (
+            {user?.rol == "ADMIN" && (
               <NavLink
                 to="/admin"
                 className={({ isActive }) =>

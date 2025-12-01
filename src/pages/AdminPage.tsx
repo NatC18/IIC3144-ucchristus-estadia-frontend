@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Header } from "@/components/Header"
 import { useCreateUser } from "@/hooks/useCreateUser"
 
+type Rol = "ADMIN" | "MEDICO" | "ENFERMERO"
+
 export default function AdminPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
@@ -22,7 +24,7 @@ export default function AdminPage() {
     rol: "MEDICO" as "ADMIN" | "MEDICO" | "ENFERMERO",
   })
 
-  if (user.rol != "ADMIN") {
+  if (user?.rol != "ADMIN") {
     return (
       <div className="min-h-screen bg-gray-100">
         <Header />
@@ -70,7 +72,7 @@ export default function AdminPage() {
       <main className="container mx-auto px-6 py-8">
         <div className="max-w-4xl mx-auto space-y-6">
 
-          {/* Título principal (TAL CUAL LO PEDISTE) */}
+          {/* Título principal*/}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
               Administración de Usuarios
@@ -182,7 +184,7 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                {/* Mensajes de error (estilo ProfilePage) */}
+                {/* Mensajes de error */}
                 {error && (
                   <p className="text-red-600 text-sm">
                     {error}
