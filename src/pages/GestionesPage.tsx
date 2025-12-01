@@ -4,11 +4,12 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Search, Filter, Loader2, AlertCircle, RefreshCcw, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search, Filter, Loader2, AlertCircle, RefreshCcw, ChevronLeft, ChevronRight, FileSpreadsheet } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useGestiones, type Gestion } from '@/hooks/useGestiones'
 import { useGestionesEstadisticas } from '@/hooks/useGestionesEstadisticas'
 import { useEnfermeros } from '@/hooks/useEnfermeros'
+import { useGestionExport } from '@/hooks/useGestionExport'
 
 function getEstadoColor(estado: Gestion['estado_gestion']) {
   switch (estado) {
@@ -70,6 +71,9 @@ export function GestionesPage() {
     previousPage,
     fetchGestiones,
   } = useGestiones()
+
+  // Hook para exportación
+  const { exportando, error: errorExport, exportarExcel } = useGestionExport()
 
   // Fetch estadisticas (independent of filters/pagination)
   const { estadisticas } = useGestionesEstadisticas()
@@ -180,6 +184,20 @@ export function GestionesPage() {
               Actualizar
             </Button>
             
+            <Button 
+              onClick={exportarExcel} 
+              variant="outline" 
+              disabled={exportando}
+              className="flex items-center gap-2"
+            >
+              {exportando ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <FileSpreadsheet className="h-4 w-4" />
+              )}
+              Exportar Excel
+            </Button>
+            
           </div>
         </div>
 
@@ -197,6 +215,16 @@ export function GestionesPage() {
               >
                 Reintentar
               </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Export Error Message */}
+        {errorExport && (
+          <div className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4">
+            <div className="flex items-center gap-2 text-red-600">
+              <AlertCircle className="h-4 w-4" />
+              <span>{errorExport}</span>
             </div>
           </div>
         )}
