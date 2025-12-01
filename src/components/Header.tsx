@@ -14,7 +14,6 @@ export function Header() {
       navigate('/login')
     } catch (error) {
       console.error('Error en logout:', error)
-      // Forzar navegación aunque haya error
       navigate('/login')
     }
   }
@@ -74,9 +73,18 @@ export function Header() {
             >
               Excel
             </NavLink>
-            <Link to="#" className="text-gray-600 transition-colors hover:text-[#671E75] mr-12">
-              Administrativo
-            </Link>
+            {user?.rol == "ADMIN" && (
+              <NavLink
+                to="/admin"
+                className={({ isActive }) =>
+                  `transition-colors ${
+                    isActive ? 'text-[#671E75]' : 'text-gray-600 hover:text-[#671E75]'
+                  } mr-12`
+                }
+              >
+                Administrativo
+              </NavLink>
+            )}
           </nav>
         </div>
 
