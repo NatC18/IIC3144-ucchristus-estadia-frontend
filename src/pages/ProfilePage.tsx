@@ -49,7 +49,7 @@ export function ProfilePage() {
       setSuccess(true)
       setPasswordData({ old_password: "", new_password: "", confirm_password: "" })
     } catch (err) {
-      setError("Error al conectar con el servidor")
+      setError("Error al conectar con el servidor: " + err)
     } finally {
       setLoading(false)
     }

@@ -12,6 +12,16 @@ export default function AdminPage() {
 
   const { createUser, loading, error, success } = useCreateUser()
 
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+    confirm_password: "",
+    nombre: "",
+    apellido: "",
+    rut: "",
+    rol: "MEDICO" as "ADMIN" | "MEDICO" | "ENFERMERO",
+  })
+
   if (user.rol != "ADMIN") {
     return (
       <div className="min-h-screen bg-gray-100">
@@ -35,16 +45,6 @@ export default function AdminPage() {
       </div>
     )
   }
-
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-    confirm_password: "",
-    nombre: "",
-    apellido: "",
-    rut: "",
-    rol: "MEDICO" as "ADMIN" | "MEDICO" | "ENFERMERO",
-  })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -136,7 +136,7 @@ export default function AdminPage() {
                     <select
                       className="w-full border rounded-lg p-2 bg-white"
                       value={form.rol}
-                      onChange={(e) => setForm({ ...form, rol: e.target.value as any })}
+                      onChange={(e) => setForm({ ...form, rol: e.target.value as Rol })}
                     >
                       <option value="MEDICO">Médico</option>
                       <option value="ENFERMERO">Enfermero</option>
