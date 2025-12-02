@@ -15,6 +15,7 @@ export function DashboardPage() {
     stats,
     tareasPendientes,
     extensionesCriticas,
+    toggleIgnorarExtension,
     alertasPrediccion,
     estadisticasGestiones,
     tendenciaEstadia,
@@ -70,6 +71,7 @@ export function DashboardPage() {
             <ExtensionesCriticas 
               extensiones={extensionesCriticas} 
               loading={dashboardLoading}
+              onToggleIgnorar={toggleIgnorarExtension}
             />
           </div>
 
