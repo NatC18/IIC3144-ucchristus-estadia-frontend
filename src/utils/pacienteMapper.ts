@@ -4,7 +4,7 @@ import type { Paciente as PacienteAPI } from '@/types'
 export interface PacienteSimplificado {
   id: string
   nombre: string
-  score: number
+  score: number | null | undefined
   rut: string
   prevision: string
   edad: number
@@ -17,7 +17,7 @@ export function mapPacienteFromAPI(apiPaciente: PacienteAPI): PacienteSimplifica
   return {
     id: apiPaciente.id,
     nombre: apiPaciente.nombre,
-    score: apiPaciente.score_social || 0,
+    score: apiPaciente.score_social,
     rut: apiPaciente.rut,
     prevision: apiPaciente.prevision_1 || 'N/A',
     edad: apiPaciente.edad,

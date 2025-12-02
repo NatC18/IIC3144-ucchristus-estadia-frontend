@@ -174,7 +174,7 @@ export function PacientesPage() {
                       <TableCell className="font-medium">{paciente.nombre}</TableCell>
                       <TableCell>{paciente.rut}</TableCell>
                       <TableCell>{paciente.prevision}</TableCell>
-                      <TableCell>{paciente.score}</TableCell>
+                      <TableCell>{paciente.score !== null && paciente.score !== undefined ? paciente.score : "N/A"}</TableCell>
                       <TableCell>
                         <Badge
                           variant="outline"

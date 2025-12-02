@@ -1,5 +1,4 @@
-import { Search, User, LogOut } from 'lucide-react'
-import { Input } from '@/components/ui/input'
+import { User, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/contexts/AuthContext'
@@ -15,10 +14,10 @@ export function Header() {
       navigate('/login')
     } catch (error) {
       console.error('Error en logout:', error)
-      // Forzar navegación aunque haya error
       navigate('/login')
     }
   }
+
   return (
     <header className="bg-white border-b border-gray-100 px-6 py-4">
       <div className="flex items-center justify-between">
@@ -59,14 +58,6 @@ export function Header() {
               Pacientes
             </NavLink>
             <NavLink 
-              to="/excel-management" 
-              className={({ isActive }) => 
-                `transition-colors ${isActive ? 'text-[#671E75]' : 'text-gray-600 hover:text-[#671E75]'}`
-              }
-            >
-              Excel
-            </NavLink>
-            <NavLink 
               to="/episodios" 
               className={({ isActive }) => 
                 `transition-colors ${isActive ? 'text-[#671E75]' : 'text-gray-600 hover:text-[#671E75]'}`
@@ -74,26 +65,30 @@ export function Header() {
             >
               Episodios
             </NavLink>
-            <Link to="#" className="text-gray-600 transition-colors hover:text-[#671E75]">
-              Alertas
-            </Link>
-            <Link to="#" className="text-gray-600 transition-colors hover:text-[#671E75]">
-              Reportes
-            </Link>
-            <Link to="#" className="text-gray-600 transition-colors hover:text-[#671E75]">
-              Administrativo
-            </Link>
+            <NavLink 
+              to="/excel-management" 
+              className={({ isActive }) => 
+                `transition-colors ${isActive ? 'text-[#671E75]' : 'text-gray-600 hover:text-[#671E75]'}`
+              }
+            >
+              Excel
+            </NavLink>
+            {user?.rol == "ADMIN" && (
+              <NavLink
+                to="/admin"
+                className={({ isActive }) =>
+                  `transition-colors ${
+                    isActive ? 'text-[#671E75]' : 'text-gray-600 hover:text-[#671E75]'
+                  } mr-12`
+                }
+              >
+                Administrativo
+              </NavLink>
+            )}
           </nav>
         </div>
 
         <div className="flex items-center space-x-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input 
-              placeholder="Buscar" 
-              className="pl-10 w-64"
-            />
-          </div>
           {/* Información del usuario */}
           {user && (
             <div className="flex items-center gap-3 text-sm">

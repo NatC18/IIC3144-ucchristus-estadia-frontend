@@ -13,6 +13,11 @@ export interface Cama {
 
 // ==================== EPISODIO ====================
 
+export type TipoAlerta = 
+  | 'score_social_alto' 
+  | 'extension_critica' 
+  | 'prediccion_estadia_larga'
+
 export interface Episodio {
   id: string
   paciente: string
@@ -26,7 +31,14 @@ export interface Episodio {
   estancia_prequirurgica?: number | null
   estancia_postquirurgica?: number | null
   estancia_norma_grd?: number | null
+  prediccion_extension?: number | null
+  probabilidad_extension?: number | null
   estancia_dias: number
+  alertas?: TipoAlerta[]
+  semaforo_riesgo?: {
+    color: 'red' | 'yellow' | 'green' | 'gray'
+    probabilidad: number | null
+  } | null
   created_at: string
   updated_at: string
 }
@@ -81,6 +93,18 @@ export interface EpisodioEstadisticas {
   altas_hoy: number
 }
 
+// ==================== NOTAS ====================
+
+export interface Nota {
+  id: string
+  gestion: string
+  usuario?: string | null
+  usuario_nombre?: string
+  descripcion: string
+  fecha_nota: string
+  estado: string
+}
+
 // ==================== RESPUESTAS PAGINADAS ====================
 
 export interface PaginatedResponse<T> {
@@ -89,3 +113,23 @@ export interface PaginatedResponse<T> {
   previous: string | null
   results: T[]
 }
+
+// ==================== INFORMACION SERVICIO ====================
+
+export interface InformacionServicio {
+  codigo: string
+  descripcion: string,
+  id: string
+}
+
+// ==================== SERVICIO ====================
+
+export interface Servicio {
+  id: string
+  episodio: string
+  descripcion: string
+  tipo: string
+  fecha: string
+  servicio: InformacionServicio
+}
+

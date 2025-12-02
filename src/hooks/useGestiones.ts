@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { authService } from '@/services/authService'
+import type { Nota } from '@/types'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001/api'
 
@@ -18,15 +19,21 @@ export interface Gestion {
   usuario_nombre?: string
   paciente_id?: string
   paciente_nombre?: string
+  notas?: Nota[]
   // Traslado fields
-  centro_destinatario?: string | null
+  estado_traslado?: string | null
+  estado_traslado_display?: string | null
+  tipo_traslado?: string | null
+  tipo_traslado_display?: string | null
   motivo_traslado?: string | null
-  tipo_solicitud?: string | null
-  nivel_atencion?: string | null
-  diagnostico_transfer?: string | null
-  estado_transfer?: string | null
-  fecha_hora_inicio_traslado?: string | null
-  fecha_hora_finalizacion_traslado?: string | null
+  centro_destinatario?: string | null
+  tipo_solicitud_traslado?: string | null
+  tipo_solicitud_traslado_display?: string | null
+  nivel_atencion_traslado?: string | null
+  nivel_atencion_traslado_display?: string | null
+  motivo_rechazo_traslado?: string | null
+  motivo_cancelacion_traslado?: string | null
+  fecha_finalizacion_traslado?: string | null
 }
 
 // Interfaz para la respuesta paginada
@@ -37,24 +44,23 @@ export interface PaginatedResponse<T> {
   results: T[]
 }
 
-// Interfaz para crear/actualizar gestión
 export interface GestionInput {
   episodio: string
   usuario?: string | null
   tipo_gestion: string
   informe: string
   estado_gestion: 'INICIADA' | 'EN_PROGRESO' | 'COMPLETADA' | 'CANCELADA'
-  fecha_inicio: string
-  fecha_fin?: string | null
+  fecha_inicio: string // ISO 8601 datetime format
+  fecha_fin?: string | null // ISO 8601 datetime format
   // Traslado fields
-  centro_destinatario?: string | null
+  estado_traslado?: string | null
+  tipo_traslado?: string | null
   motivo_traslado?: string | null
-  tipo_solicitud?: string | null
-  nivel_atencion?: string | null
-  diagnostico_transfer?: string | null
-  estado_transfer?: string | null
-  fecha_hora_inicio_traslado?: string | null
-  fecha_hora_finalizacion_traslado?: string | null
+  centro_destinatario?: string | null
+  tipo_solicitud_traslado?: string | null
+  nivel_atencion_traslado?: string | null
+  motivo_rechazo_traslado?: string | null
+  motivo_cancelacion_traslado?: string | null
 }
 
 export function useGestiones(episodioId?: string) {
@@ -62,11 +68,16 @@ export function useGestiones(episodioId?: string) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [totalCount, setTotalCount] = useState(0)
+  const [nextPage, setNextPage] = useState<string | null>(null)
+  const [previousPage, setPreviousPage] = useState<string | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
 
   const fetchGestiones = useCallback(async (filters?: {
     search?: string
     estado?: string
     episodio?: string
+    usuario?: string | null
+    page?: number
   }) => {
     try {
       setLoading(true)
@@ -77,6 +88,8 @@ export function useGestiones(episodioId?: string) {
       if (filters?.search) params.append('search', filters.search)
       if (filters?.estado) params.append('estado_gestion', filters.estado)
       if (filters?.episodio || episodioId) params.append('episodio', filters?.episodio || episodioId || '')
+      if (filters?.usuario) params.append('usuario', filters.usuario)
+      if (filters?.page) params.append('page', String(filters.page))
 
       const queryString = params.toString()
       const url = `${API_BASE_URL}/gestiones/${queryString ? `?${queryString}` : ''}`
@@ -89,6 +102,9 @@ export function useGestiones(episodioId?: string) {
       
       setGestiones(data.results || [])
       setTotalCount(data.count || 0)
+      setNextPage(data.next || null)
+      setPreviousPage(data.previous || null)
+      setCurrentPage(filters?.page || 1)
 
     } catch (err) {
       console.error('Error loading gestiones:', err)
@@ -108,6 +124,20 @@ export function useGestiones(episodioId?: string) {
 
     if (!response.ok) {
       const error = await response.json()
+      console.error('Backend validation error:', error)
+      
+      // Format validation errors for display
+      if (error.traslado_fields) {
+        throw new Error(error.traslado_fields)
+      } else if (typeof error === 'object') {
+        const errorMessages = Object.entries(error)
+          .map(([field, msgs]) => {
+            const msgArray = Array.isArray(msgs) ? msgs : [msgs]
+            return `${field}: ${msgArray.join(', ')}`
+          })
+          .join('\n')
+        throw new Error(errorMessages || 'Error creating gestion')
+      }
       throw new Error(error.message || 'Error creating gestion')
     }
 
@@ -125,6 +155,17 @@ export function useGestiones(episodioId?: string) {
 
     if (!response.ok) {
       const error = await response.json()
+      console.error('Backend update error:', error)
+      
+      if (typeof error === 'object' && !error.message) {
+        const errorMessages = Object.entries(error)
+          .map(([field, msgs]) => {
+            const msgArray = Array.isArray(msgs) ? msgs : [msgs]
+            return `${field}: ${msgArray.join(', ')}`
+          })
+          .join('\n')
+        throw new Error(errorMessages || 'Error updating gestion')
+      }
       throw new Error(error.message || 'Error updating gestion')
     }
 
@@ -157,6 +198,9 @@ export function useGestiones(episodioId?: string) {
     loading,
     error,
     totalCount,
+    nextPage,
+    previousPage,
+    currentPage,
     fetchGestiones,
     createGestion,
     updateGestion,

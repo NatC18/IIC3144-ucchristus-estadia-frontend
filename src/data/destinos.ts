@@ -1,3 +1,115 @@
+
+// Estado Transfer with backend values
+export const estadosTransfer = [
+    { display: 'Aceptado', value: 'ACEPTADO' },
+    { display: 'Cancelado', value: 'CANCELADO' },
+    { display: 'Completado', value: 'COMPLETADO' },
+    { display: 'Pendiente', value: 'PENDIENTE' },
+    { display: 'Rechazado', value: 'RECHAZADO' },
+]
+
+// Tipo de Traslado with backend values
+export const tipo_traslado = [
+    { display: 'Salud Mental', value: 'SALUD_MENTAL' },
+    { display: 'Urgencia', value: 'URGENCIA' },
+    { display: 'Hospitalizado Externo (Non UC)', value: 'HOSPITALIZADO_EXTERNO' },
+    { display: 'Hospitalizado Interno (UC)', value: 'HOSPITALIZADO_INTERNO' },
+]
+
+// Tipo de Solicitud with backend values
+export const tiposSolicitud = [
+    { display: 'Consulta', value: 'CONSULTA' },
+    { display: 'Admisión Directa', value: 'ADMISION_DIRECTA' },
+    { display: 'Traslado de Ingreso', value: 'TRASLADO_INGRESO' },
+    { display: 'Traslado de Salida', value: 'TRASLADO_SALIDA' },
+]
+
+// Nivel de Atención with backend values
+export const nivelesAtencion = [
+    { display: 'Medicina Quirúrgica (MQ)', value: 'MEDICINA_QUIRURGICA' },
+    { display: 'Salud Mental', value: 'SALUD_MENTAL' },
+    { display: 'Cuidados Intensivos (UCI)', value: 'CUIDADOS_INTENSIVOS' },
+    { display: 'Intermedio', value: 'INTERMEDIO' },
+    { display: 'Neonatología', value: 'NEONATOLOGIA' },
+    { display: 'Obstetricia', value: 'OBSTETRICIA' },
+    { display: 'Urgencia', value: 'URGENCIA' },
+]
+
+// Mappings for backend API
+export const estadoTrasladoMap: Record<string, string> = Object.fromEntries(
+    estadosTransfer.map(item => [item.display, item.value])
+)
+
+export const tipoTrasladoMap: Record<string, string> = Object.fromEntries(
+    tipo_traslado.map(item => [item.display, item.value])
+)
+
+export const tipoSolicitudMap: Record<string, string> = Object.fromEntries(
+    tiposSolicitud.map(item => [item.display, item.value])
+)
+
+export const nivelAtencionMap: Record<string, string> = Object.fromEntries(
+    nivelesAtencion.map(item => [item.display, item.value])
+)
+
+// Motivo de Traslado
+export const motivosTraslado = [
+    'Salida - Capacidad - Caso Complejo (Resolutividad)',
+    'Salida - Capacidad - Sin Cobertura Médica',
+    'Salida - Capacidad - Servicios No Disponibles',
+    'Salida - Capacidad - Cama No Disponible',
+    'Salida - Capacidad - Personal No Disponible',
+    'Salida - Continuidad de Cuidados (Rehabilitación HOSDOM)',
+    'Salida - Cobertura Preferente Fuera de CSC',
+    'Salida - Convenio GES - CAEC',
+    'Salida - Solicitud del Paciente/Familia (Costo Alto)',
+    'Salida - Regreso a Centro de Origen (GRD)',
+    'Salida - Ley de Urgencia MAI',
+    'Salida - Cobertura preferente fuera de HCUC',
+    'Salida - Regreso a Centro de Origen (GES 2do prestador)',
+    'Salida - Continuidad de Cuidados (Clinica de rehabilitación)',
+    'Salida - Regreso a Centro de Origen (otros convenios)',
+]
+
+// Motivo Rechazo Traslado
+export const motivoRechazoTraslado = [
+    'Rechazo - Riesgo Financiero',
+    'Rechazo - Hospital Bloqueado', 
+    'Rechazo - Capacidad - Equipamiento No Disponible',
+    'Rechazo - Capacidad – Cobertura Medico',
+    'Rechazo - Capacidad - Servicios No Disponibles (Prestaciones)',
+    'Rechazo - Capacidad - Cama No Disponible',
+    'Rechazo - Capacidad - Personal No Disponible',
+    'Rechazo - Larga Estadía (Nivel Inferior de Cuidados)',
+    'Rechazo - Rechazo del Médico',
+    'Rechazo - Paciente Inestable',
+    'Rechazo - Aseguradora Tardía, Cama Ocupada',
+    'Rechazo - Tiempo de Espera de Evaluación Medico',
+    'Rechazo - Capacidad - Resolutividad Médica',
+    'Rechazo - Pertinencia GRD rechazada',
+    'Rechazo - Cobertura ISAPRE',
+]
+
+// Motivo Cancelación Traslado
+export const motivoCancelacionTraslado = [
+    'Cancelación - Cama Disponible Ahora en la Centro de Origen', 
+    'Cancelación - Tiempo de Espera de Cama Inaceptable',
+    'Cancelación - Alta Administrativa (Contra Consejo Médico)',
+    'Cancelación - Condición del Paciente Mejoró',
+    'Cancelación - Condición del Paciente se Deterioró',
+    'Cancelación - Fallecimiento del Paciente',
+    'Cancelación - Preferencia del Paciente/Familia',
+    'Cancelación - Iniciado por Centro de Origen por Error',
+    'Cancelación - Tiempo de Espera de Evaluación Médico',
+    'Cancelación - Cambio de convenio',
+    'Cancelación - Error en Asignación de Cupo',
+    'Cancelación - Caso social',
+    'Cancelación - Sin respuesta',
+    'Cancelación - Solicitud de Información Adicional',
+    'Cancelación - Cambio servicio de salud',
+    'Cancelación - Sin respuesta Inhábil',
+]
+
 // Centro de Destinatario
 export const centrosDestino = [
     'CLINICA SAN CARLOS DE APOQUINDO',
@@ -215,53 +327,6 @@ export const centrosDestino = [
     'INSTITUTO PSIQUIATRICO JOSÉ HORWITZ BARAK',
 ]
 
-// Motivo de Traslado
-export const motivosTraslado = [
-    'Salida - Capacidad - Caso Complejo (Resolutividad)',
-    'Salida - Capacidad - Sin Cobertura Médica',
-    'Salida - Capacidad - Servicios No Disponibles',
-    'Salida - Capacidad - Cama No Disponible',
-    'Salida - Capacidad - Personal No Disponible',
-    'Salida - Continuidad de Cuidados (Rehabilitación HOSDOM)',
-    'Salida - Cobertura Preferente Fuera de CSC',
-    'Salida - Convenio GES - CAEC',
-    'Salida - Solicitud del Paciente/Familia (Costo Alto)',
-    'Salida - Regreso a Centro de Origen (GRD)',
-    'Salida - Ley de Urgencia MAI',
-    'Salida - Cobertura preferente fuera de HCUC',
-    'Salida - Regreso a Centro de Origen (GES 2do prestador)',
-    'Salida - Continuidad de Cuidados (Clinica de rehabilitación)',
-    'Salida - Regreso a Centro de Origen (otros convenios)',
-]
-
-// Tipo de Solicitud
-export const tiposSolicitud = [
-    'Consulta',
-    'Admisión Directa',
-    'Traslado de Ingreso',
-    'Traslado de Salida',
-]
-
-// Nivel de Atención
-export const nivelesAtencion = [
-    'Medicina Quirúrgica (MQ)',
-    'Salud Mental',
-    'Cuidados Intensivos (UCI)',
-    'Intermedio',
-    'Neonatología',
-    'Obstetricia',
-    'Urgencia',
-]
-
-// Estado Transfer
-export const estadosTransfer = [
-  'Pendiente de Aprobación',
-  'Aprobado',
-  'Rechazado',
-  'En Proceso',
-  'Completado',
-  'Cancelado',
-]
 
 export const diagnostico_transfers = [
     'Absceso',
@@ -926,13 +991,7 @@ export const diagnostico_transfers = [
     'Sindrome mononucleosico',
 ]
 
-export const estadosTraslado = [
-    'Aceptado',
-    'Cancelado',
-    'Completado',
-    'Pendiente',
-    'Rechazado',
-]
+
 
 // Interface para los datos de Traslado
 export interface DatosTraslado {
@@ -942,6 +1001,7 @@ export interface DatosTraslado {
   nivel_atencion: string
   diagnostico_transfer: string
   estado_transfer: string
+  tipo_traslado: string
   fecha_hora_inicio: string
   fecha_hora_finalizacion: string
 }

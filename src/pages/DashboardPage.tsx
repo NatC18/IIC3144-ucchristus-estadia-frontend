@@ -2,6 +2,7 @@
 import { Header } from '@/components/Header'
 import { TareasPendientes } from '@/components/TareasPendientes'
 import { ExtensionesCriticas } from '@/components/ExtensionesCriticas'
+import { AlertasPredichas } from '@/components/AlertasPredichas'
 import { EstadisticasTareasChart, TiposGestionChart, TendenciaEstadiaChart } from '@/components/Charts'
 import { useDashboard } from '@/hooks/useDashboard'
  
@@ -14,6 +15,8 @@ export function DashboardPage() {
     stats,
     tareasPendientes,
     extensionesCriticas,
+    toggleIgnorarExtension,
+    alertasPrediccion,
     estadisticasGestiones,
     tendenciaEstadia,
     sinScoreSocial,
@@ -68,15 +71,16 @@ export function DashboardPage() {
             <ExtensionesCriticas 
               extensiones={extensionesCriticas} 
               loading={dashboardLoading}
+              onToggleIgnorar={toggleIgnorarExtension}
             />
           </div>
 
           <div className="space-y-8">
-            {/* Bloques blancos solicitados */}
-            <div className="bg-white p-6 rounded-xl border-0">
-              <h3 className="text-lg font-semibold text-gray-900">Alertas predichas de larga estadía</h3>
-              <p className="text-gray-600 mt-2">Próximamente</p>
-            </div>
+            {/* Alertas predichas de larga estadía */}
+            <AlertasPredichas 
+              alertas={alertasPrediccion} 
+              loading={dashboardLoading}
+            />
 
             <div className="bg-white p-6 rounded-xl border-0">
               <h3 className="text-lg font-semibold text-gray-900">Score social</h3>
@@ -96,7 +100,11 @@ export function DashboardPage() {
                     </thead>
                     <tbody>
                       {topScoreSocial.map((p) => (
-                        <tr key={p.id} className="border-t border-gray-100">
+                        <tr 
+                          key={p.id} 
+                          onClick={() => window.location.href = `/pacientes/${p.id}`}
+                          className="border-t border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors"
+                        >
                           <td className="py-2 pr-4 text-gray-900">{p.nombre}</td>
                           <td className="py-2 pr-4 text-gray-600">{p.rut}</td>
                           <td className="py-2 font-semibold text-gray-900">{p.score_social}</td>

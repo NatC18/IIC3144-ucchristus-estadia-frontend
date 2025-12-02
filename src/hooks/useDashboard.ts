@@ -21,10 +21,12 @@ export interface TareaPendiente {
 }
 
 export interface ExtensionCritica {
+  id: string | number
   episodio: string
   paciente: string
   dias_estadia: number
   fecha_ingreso: string
+  ignorar?: boolean | number | string | null
 }
 
 export interface EstadisticasGestiones {
@@ -46,10 +48,21 @@ export interface TopScoreItem {
   score_social: number
 }
 
+export interface AlertaPrediccion {
+  id: number
+  episodio: string
+  paciente: string
+  dias_estadia: number
+  dias_esperados: number
+  fecha_ingreso: string
+}
+
 export interface DashboardData {
   stats: DashboardStats | null
   tareasPendientes: TareaPendiente[]
   extensionesCriticas: ExtensionCritica[]
+  toggleIgnorarExtension: (extension: ExtensionCritica) => Promise<void>
+  alertasPrediccion: AlertaPrediccion[]
   estadisticasGestiones: EstadisticasGestiones | null
   tendenciaEstadia: TendenciaEstadia[]
   sinScoreSocial: number | null
@@ -67,6 +80,7 @@ export function useDashboard(): DashboardData {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [tareasPendientes, setTareasPendientes] = useState<TareaPendiente[]>([])
   const [extensionesCriticas, setExtensionesCriticas] = useState<ExtensionCritica[]>([])
+  const [alertasPrediccion, setAlertasPrediccion] = useState<AlertaPrediccion[]>([])
   const [estadisticasGestiones, setEstadisticasGestiones] = useState<EstadisticasGestiones | null>(null)
   const [tendenciaEstadia, setTendenciaEstadia] = useState<TendenciaEstadia[]>([])
   const [sinScoreSocial, setSinScoreSocial] = useState<number | null>(null)
@@ -75,16 +89,20 @@ export function useDashboard(): DashboardData {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    const parseIgnorar = (valor: ExtensionCritica['ignorar']) =>
+      valor === true || valor === 1 || valor === '1'
+
     const fetchDashboardData = async () => {
       try {
         setLoading(true)
         setError(null)
 
         // Llamadas paralelas a todos los endpoints usando authService
-        const [statsRes, tareasRes, extensionesRes, gestionesStatsRes, tendenciaRes, scoreRes, topScoreRes] = await Promise.all([
+        const [statsRes, tareasRes, extensionesRes, alertasRes, gestionesStatsRes, tendenciaRes, scoreRes, topScoreRes] = await Promise.all([
           authService.fetchWithAuth(`${API_BASE_URL}/episodios/estadisticas/`),
           authService.fetchWithAuth(`${API_BASE_URL}/gestiones/tareas_pendientes/`),
           authService.fetchWithAuth(`${API_BASE_URL}/episodios/extensiones_criticas/`),
+          authService.fetchWithAuth(`${API_BASE_URL}/episodios/alertas_prediccion/`),
           authService.fetchWithAuth(`${API_BASE_URL}/gestiones/estadisticas/`),
           authService.fetchWithAuth(`${API_BASE_URL}/episodios/tendencia_estadia/`),
           authService.fetchWithAuth(`${API_BASE_URL}/pacientes/score_social_faltante/`),
@@ -93,7 +111,12 @@ export function useDashboard(): DashboardData {
 
         setStats(await statsRes.json() as DashboardStats)
         setTareasPendientes(await tareasRes.json() as TareaPendiente[])
-        setExtensionesCriticas(await extensionesRes.json() as ExtensionCritica[])
+        const extensionesJson = await extensionesRes.json() as ExtensionCritica[]
+        setExtensionesCriticas(extensionesJson.map((ext) => ({
+          ...ext,
+          ignorar: parseIgnorar(ext.ignorar),
+        })))
+        setAlertasPrediccion(await alertasRes.json() as AlertaPrediccion[])
         setEstadisticasGestiones(await gestionesStatsRes.json() as EstadisticasGestiones)
         setTendenciaEstadia(await tendenciaRes.json() as TendenciaEstadia[])
   const scoreJson = await scoreRes.json() as { sin_score_social: number }
@@ -111,10 +134,49 @@ export function useDashboard(): DashboardData {
     fetchDashboardData()
   }, []) // Solo se ejecuta al montar
 
+  const toggleIgnorarExtension = async (extension: ExtensionCritica) => {
+    const parseIgnorar = (valor: ExtensionCritica['ignorar']) =>
+      valor === true || valor === 1 || valor === '1'
+
+    const siguienteValor = !parseIgnorar(extension.ignorar)
+
+    try {
+      const response = await authService.fetchWithAuth(`${API_BASE_URL}/episodios/${extension.id}/`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ignorar: siguienteValor }),
+      })
+
+      if (!response.ok) {
+        throw new Error('No se pudo actualizar el estado de ignorar')
+      }
+
+      // Actualizar el estado local sin esperar un refetch completo
+      const payload = await response.json().catch(() => null)
+      setExtensionesCriticas((prev) =>
+        prev.map((ext) =>
+          ext.id === extension.id
+            ? {
+                ...ext,
+                ignorar: parseIgnorar(
+                  (payload as ExtensionCritica | null)?.ignorar ?? siguienteValor,
+                ),
+              }
+            : ext,
+        ),
+      )
+    } catch (err) {
+      console.error('Error al cambiar ignorar en extensión crítica:', err)
+      setError(err instanceof Error ? err.message : 'Error desconocido')
+    }
+  }
+
   return {
     stats,
+    alertasPrediccion,
     tareasPendientes,
     extensionesCriticas,
+    toggleIgnorarExtension,
     estadisticasGestiones,
     tendenciaEstadia,
     sinScoreSocial,

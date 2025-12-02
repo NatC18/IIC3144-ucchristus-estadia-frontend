@@ -3,11 +3,14 @@ import { Header } from '@/components/Header'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Plus } from 'lucide-react'
+import { ArrowLeft, Plus, AlertTriangle } from 'lucide-react'
 import { useEpisodio } from '@/hooks/useEpisodio'
 import { usePaciente } from '@/hooks/usePaciente'
 import { useGestiones } from '@/hooks/useGestiones'
+import { useServicios } from '@/hooks/useServicios'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { TipoAlerta } from '@/types'
+import { getServicioColor } from '@/lib/transformations'
 
 
 function getTipoColor(tipo: string) {
@@ -33,11 +36,21 @@ function getEstadoColor(estado: string) {
   }
 }
 
+const getAlertaLabel = (tipo: TipoAlerta): string => {
+  const labels: Record<TipoAlerta, string> = {
+    score_social_alto: 'Score Social Alto',
+    extension_critica: 'Extensión Crítica',
+    prediccion_estadia_larga: 'Predicción Estadía Larga'
+  };
+  return labels[tipo];
+};
+
 
 export function EpisodioDetailPage() {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
   const { episodio, loading, error } = useEpisodio(id)
+  const { servicios, loading: loadingServicios, error: errorServicios } = useServicios(episodio?.id)
   const { gestiones, loading: loadingGestiones } = useGestiones(episodio?.id)
   const { paciente } = usePaciente(episodio?.paciente ?? undefined)
 
@@ -129,6 +142,28 @@ export function EpisodioDetailPage() {
                       {episodio.fecha_egreso
                         ? new Date(episodio.fecha_egreso).toLocaleString('es-CL')
                         : 'Aún hospitalizado'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 mb-1">Cama Asignada</p>
+                    <p className="text-base text-gray-900">
+                      {episodio.cama?.codigo_cama || 'No asignada'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 mb-1">Última Actualización</p>
+                    <p className="text-base text-gray-900">
+                      {new Date(episodio.updated_at).toLocaleString('es-CL', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false 
+                      })}
                     </p>
                   </div>
                 </div>
@@ -236,42 +271,171 @@ export function EpisodioDetailPage() {
                 )}
               </TableBody>  
             </Table>
+
+            <Card className="rounded-xl border-0 bg-white">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">
+                  Servicios Asociados
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {loadingServicios ? (
+                  <p className="text-gray-500">Cargando servicios...</p>
+                ) : errorServicios ? (
+                  <p className="text-red-500">Error al cargar los servicios: {errorServicios}</p>
+                ) : servicios.length === 0 ? (
+                  <p className="text-gray-500">No hay servicios registrados para este episodio.</p>
+                ) : (
+                  <Table className="rounded-lg border-0 bg-white">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Código</TableHead>
+                        <TableHead>Descripción</TableHead>
+                        <TableHead>Fecha</TableHead>
+                        <TableHead>Tipo</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {servicios.map((s) => (
+                        <TableRow key={s.id}>
+                          <TableCell>{s.servicio.codigo}</TableCell>
+                          <TableCell>{s.servicio.descripcion}</TableCell>
+                          <TableCell>
+                            {new Date(s.fecha).toLocaleDateString('es-CL')}
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={getServicioColor(s.tipo)}>
+                              {s.tipo}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
             
 
           </div>
 
           {/* Sidebar */}
           <div className="space-y-6">
-            <Card className="rounded-xl border-0 bg-white">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold">Información Adicional</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Cama Asignada</p>
-                  <p className="text-sm text-gray-900">{episodio.cama?.codigo_cama || 'No asignada'}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Estado</p>
-                  <p className="text-sm text-gray-900">
-                    {episodio.fecha_egreso ? 'Egresado' : 'Activo'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Última Actualización</p>
-                  <p className="text-sm text-gray-900">
-                    {new Date(episodio.updated_at).toLocaleString('es-CL', {
-                        year: 'numeric',
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false 
-                      })};
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Alertas individuales */}
+            {episodio.alertas && episodio.alertas.map((alerta) => (
+              <Card 
+                key={alerta} 
+                className={`rounded-xl border-0 border-l-4 ${
+                  alerta === 'score_social_alto' 
+                    ? 'bg-orange-50 border-orange-400'
+                    : alerta === 'extension_critica'
+                    ? 'bg-red-50 border-red-400'
+                    : 'bg-yellow-50 border-yellow-400'
+                }`}
+              >
+                <CardContent className="pt-6">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className={`w-5 h-5 mt-0.5 flex-shrink-0 ${
+                      alerta === 'score_social_alto'
+                        ? 'text-orange-600'
+                        : alerta === 'extension_critica'
+                        ? 'text-red-600'
+                        : 'text-yellow-600'
+                    }`} />
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900 mb-2">
+                        {getAlertaLabel(alerta)}
+                      </h3>
+                      
+                      {/* Detalles según tipo de alerta */}
+                      {alerta === 'score_social_alto' && (
+                        <div className="text-sm text-gray-700 space-y-1">
+                          <p>El paciente tiene un <strong>score social de {paciente?.score_social || 'N/A'}</strong>.</p>
+                          <p className="text-gray-600 mt-2">
+                            🚨 Un score social alto puede indicar necesidades especiales de apoyo social o dificultades en el alta hospitalaria.
+                          </p>
+                        </div>
+                      )}
+                      
+                      {alerta === 'extension_critica' && (
+                        <div className="text-sm text-gray-700 space-y-1">
+                          <p>
+                            La estadía actual es de <strong>{episodio.estancia_dias || 0} días</strong>, 
+                            superando la norma GRD de <strong>{episodio.estancia_norma_grd || 0} días</strong>.
+                          </p>
+                          <p className="text-gray-600 mt-2">
+                            🚨 La estadía extendida puede requerir revisión clínica y coordinación para planificar el alta.
+                          </p>
+                        </div>
+                      )}
+                      
+                      {alerta === 'prediccion_estadia_larga' && (
+                        <div className="text-sm text-gray-700 space-y-1">
+                          <p>
+                            El modelo predictivo indica que este episodio tiene <strong>alta probabilidad</strong> de exceder 
+                            la estancia esperada de <strong>{episodio.estancia_norma_grd || 0} días</strong>.
+                          </p>
+                          <p>Estadía actual: <strong>{episodio.estancia_dias || 0} días</strong></p>
+                          <p className="text-gray-600 mt-2">
+                            🚨 Esta predicción permite planificar recursos y coordinar el alta con anticipación.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+
+            {/* Semáforo de riesgo - Predicción del modelo */}
+            {episodio.semaforo_riesgo && (
+              <Card className="rounded-xl border-0 bg-white border-l-4 border-gray-300">
+                <CardContent className="pt-6">
+                  <div className="flex items-start gap-3">
+                    <div className={`w-5 h-5 rounded-full mt-0.5 flex-shrink-0 ${
+                      episodio.semaforo_riesgo.color === 'red' ? 'bg-red-500' :
+                      episodio.semaforo_riesgo.color === 'yellow' ? 'bg-yellow-400' :
+                      episodio.semaforo_riesgo.color === 'green' ? 'bg-green-500' :
+                      'bg-gray-400'
+                    }`}></div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900 mb-2">
+                        Predicción del Modelo 
+                      </h3>
+                      <div className="text-sm text-gray-700 space-y-1">
+                        {episodio.semaforo_riesgo.probabilidad === null ? (
+                          <p className="text-gray-600">
+                            Sin predicción del modelo disponible.
+                          </p>
+                        ) : episodio.semaforo_riesgo.color === 'gray' ? (
+                          <p>
+                            El episodio ya superó el umbral crítico de estadía.
+                            {episodio.semaforo_riesgo.probabilidad !== null && (
+                              <> Probabilidad inicial de extensión: <strong>{(episodio.semaforo_riesgo.probabilidad * 100).toFixed(0)}%</strong></>
+                            )}
+                          </p>
+                        ) : (
+                          <>
+                            <p>
+                              {episodio.semaforo_riesgo.color === 'red' && 'Alta probabilidad de extenderse: '}
+                              {episodio.semaforo_riesgo.color === 'yellow' && 'Media probabilidad de extenderse: '}
+                              {episodio.semaforo_riesgo.color === 'green' && 'Baja probabilidad de extenderse: '}
+                              <strong>{(episodio.semaforo_riesgo.probabilidad * 100).toFixed(0)}%</strong>
+                            </p>
+                            <p className="text-gray-600 mt-2">
+                              {episodio.semaforo_riesgo.color === 'red' && 'Se recomienda planificar recursos adicionales.'}
+                              {episodio.semaforo_riesgo.color === 'yellow' && 'Mantener monitoreo continuo de la evolución del paciente.'}
+                              {episodio.semaforo_riesgo.color === 'green' && 'Evolución dentro de parámetros esperados.'}
+                            </p>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             <Card className="rounded-xl border-0 bg-blue-50">
               <CardContent className="pt-6">
                 <div className="flex gap-3">

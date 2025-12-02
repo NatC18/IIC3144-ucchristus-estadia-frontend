@@ -53,7 +53,7 @@ export function InformacionPaciente({
 
         <div>
           <p className="text-sm text-gray-500">Score</p>
-          <p className="font-semibold text-gray-900">{score}</p>
+          <p className="font-semibold text-gray-900">{score !== null && score !== undefined ? score : "N/A"}</p>
         </div>
 
         <div>
